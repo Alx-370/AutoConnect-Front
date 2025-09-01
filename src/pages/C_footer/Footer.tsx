@@ -22,7 +22,6 @@ const Footer = () => {
             </Typography>
 
             <Box sx={{ display: "flex", justifyContent: "center", gap: 2, mb: 2 }}>
-                <Link href="/about" color="inherit" underline="hover">À propos</Link>
                 <Link href="/contact" color="inherit" underline="hover">Contact</Link>
                 <Link href="/cgu" color="inherit" underline="hover">Mentions légales</Link>
             </Box>
