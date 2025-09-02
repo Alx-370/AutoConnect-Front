@@ -2,10 +2,16 @@ import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Box } from "@mui/material";
 import axios from "axios";
 
-const API_BASE = "https://carapi.app";
+const API_BASE = "http://localhost:8080";
+
+
+type MakeDto = {
+    id: number,
+    name: string;
+}
 
 const CarSearch = () => {
-    const [makes, setMakes] = useState<string[]>([]);
+    const [makes, setMakes] = useState<MakeDto[]>([]);
     const [models, setModels] = useState<string[]>([]);
     const [years, setYears] = useState<number[]>([]);
 
@@ -15,14 +21,12 @@ const CarSearch = () => {
 
     useEffect(() => {
         axios
-            .get<string[]>(`${API_BASE}/api/makes/v2`, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            .get<MakeDto[]>(`${API_BASE}/api/car/mark`, {
             })
-
-            .then((res) => setMakes(res.data))
-
+            .then((res) => {
+                console.log(res.data);
+                setMakes(res.data);
+            })
             .catch(console.error);
     }, []);
 
@@ -35,8 +39,9 @@ const CarSearch = () => {
 
         if (!make) return;
 
+
         axios
-            .get<string[]>(`${API_BASE}/api/models`, { params: { make } })
+            .get<string[]>(`${API_BASE}/api/models/v2`, { params: { make } })
             .then((res) => setModels(res.data))
             .catch(console.error);
     }, [make]);
@@ -49,7 +54,7 @@ const CarSearch = () => {
         if (!make || !model) return;
 
         axios
-            .get<number[]>(`${API_BASE}/api/years`, { params: { make, model } })
+            .get<number[]>(`${API_BASE}/api/years/v2`, { params: { make, model } })
             .then((res) => setYears(res.data))
             .catch(console.error);
     }, [model]);
@@ -58,13 +63,12 @@ const CarSearch = () => {
         <Box display="flex" gap={2} flexWrap="wrap" mt={4} justifyContent="center">
 
             <Autocomplete
-                options={makes}
+                options={makes.map(m => m.name)}
                 value={make}
                 onChange={(_, newValue) => setMake(newValue)}
                 sx={{ width: 250 }}
                 renderInput={(params) => <TextField {...params} label="Marque" />}
             />
-
 
             <Autocomplete
                 options={models}
@@ -74,7 +78,6 @@ const CarSearch = () => {
                 disabled={!make}
                 renderInput={(params) => <TextField {...params} label="Modèle" />}
             />
-
 
             <Autocomplete
                 options={years}

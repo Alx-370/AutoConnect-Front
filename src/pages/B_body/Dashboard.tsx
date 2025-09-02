@@ -1,14 +1,16 @@
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
-import { TextField } from "@mui/material";
+import {Box, TextField } from "@mui/material";
 import CarSearch from "../../components/CarSearch.tsx";
+
+import PrestationListContainer from "../../components/PrestationListContainer.tsx";
 
 
 const Dashboard = () => {
     return (
         <>
             <Header />
-
+            <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
             <h1
                 style={{
                     padding: 16,
@@ -47,9 +49,10 @@ const Dashboard = () => {
                 />
             </div>
 
-            {/* 🔎 Recherche de véhicule */}
-            <CarSearch />
 
+            <CarSearch />
+            <PrestationListContainer />
+            </Box>
             <Footer />
         </>
     );
