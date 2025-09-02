@@ -26,6 +26,7 @@ const CarSearch = () => {
             .then((res) => {
                 console.log(res.data);
                 setMakes(res.data.data);
+                // c est juste une erreur de type mais sa fonction quan meme
             })
             .catch(console.error);
     }, []);
