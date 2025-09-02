@@ -25,7 +25,7 @@ const CarSearch = () => {
             })
             .then((res) => {
                 console.log(res.data);
-                setMakes(res.data);
+                setMakes(res.data.data);
             })
             .catch(console.error);
     }, []);
