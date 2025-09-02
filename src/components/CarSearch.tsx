@@ -2,10 +2,15 @@ import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Box } from "@mui/material";
 import axios from "axios";
 
+type MakeDto = {
+    id: number,
+    name: string;
+}
+
 const API_BASE = "https://carapi.app";
 
 const CarSearch = () => {
-    const [makes, setMakes] = useState<string[]>([]);
+    const [makes, setMakes] = useState<MakeDto[]>([]);
     const [models, setModels] = useState<string[]>([]);
     const [years, setYears] = useState<number[]>([]);
 
@@ -15,14 +20,11 @@ const CarSearch = () => {
 
     useEffect(() => {
         axios
-            .get<string[]>(`${API_BASE}/api/makes/v2`, {
-                headers: {
-                    "Content-Type": "application/json",
-                },
+            .get<MakeDto[]>(`http://localhost:8080/car-api/makes`)
+            .then((res) => {
+                setMakes(res.data);
+                console.log(res.data)
             })
-
-            .then((res) => setMakes(res.data))
-
             .catch(console.error);
     }, []);
 
@@ -58,7 +60,7 @@ const CarSearch = () => {
         <Box display="flex" gap={2} flexWrap="wrap" mt={4} justifyContent="center">
 
             <Autocomplete
-                options={makes}
+                options={makes.map(m => m.name)}
                 value={make}
                 onChange={(_, newValue) => setMake(newValue)}
                 sx={{ width: 250 }}
