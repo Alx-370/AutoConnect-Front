@@ -10,15 +10,22 @@ type MakeDto = {
     name: string;
 }
 
+type ModelDto = {
+    id: number,
+    name: string;
+}
+
 const CarSearch = () => {
     const [makes, setMakes] = useState<MakeDto[]>([]);
-    const [models, setModels] = useState<string[]>([]);
+    const [models, setModels] = useState<ModelDto[]>([]);
     const [years, setYears] = useState<number[]>([]);
 
     const [make, setMake] = useState<string | null>(null);
     const [model, setModel] = useState<string | null>(null);
     const [year, setYear] = useState<number | null>(null);
 
+
+    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
     useEffect(() => {
         axios
             .get<MakeDto[]>(`${API_BASE}/api/car/mark`, {
@@ -39,11 +46,11 @@ const CarSearch = () => {
 
         if (!make) return;
 
-
+///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         axios
-            .get<string[]>(`${API_BASE}/api/models/v2`, { params: { make } })
-            .then((res) => setModels(res.data))
-            .catch(console.error);
+            .get<ModelDto[]>(`${API_BASE}/api/car/model`, { params: { make } })
+            .then(({ data }) => setModels(data))
+            .catch(err => console.error("[/api/car/model]", err?.response?.status, err));
     }, [make]);
 
 
@@ -52,7 +59,7 @@ const CarSearch = () => {
         setYear(null);
 
         if (!make || !model) return;
-
+////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         axios
             .get<number[]>(`${API_BASE}/api/years/v2`, { params: { make, model } })
             .then((res) => setYears(res.data))
@@ -71,7 +78,7 @@ const CarSearch = () => {
             />
 
             <Autocomplete
-                options={models}
+                options={models.map(m => m.name)}
                 value={model}
                 onChange={(_, newValue) => setModel(newValue)}
                 sx={{ width: 250 }}
