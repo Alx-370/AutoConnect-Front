@@ -2,7 +2,7 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import PrestationItem from "./PrestationItem";
 import type { PrestationItem as Prestation } from "../types/prestationItem";
-import { fetchServices } from "../api/services";
+import { fetchServices } from "../api/axiosServices.ts";
 
 const PrestationListContainer = () => {
     const [items, setItems] = useState<Prestation[]>([]);
