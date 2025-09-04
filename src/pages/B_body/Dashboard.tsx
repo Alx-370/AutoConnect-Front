@@ -49,7 +49,6 @@ const Dashboard = () => {
                 />
             </div>
 
-
             <CarSearch />
             <PrestationListContainer />
             </Box>
