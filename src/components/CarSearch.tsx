@@ -1,103 +1,66 @@
 import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Box } from "@mui/material";
-import axios from "axios";
-
-const API_BASE = "http://localhost:8080";
-
-
-type MakeDto = {
-    id: number,
-    name: string;
-}
-
-type ModelDto = {
-    id: number,
-    name: string;
-}
-
-type YearsDto = {
-    years: string;
-}
+import { fetchMakes, fetchModels, fetchYears } from "../api/axiosCar.ts";
+import type { MakeDto, ModelDto, YearDto, MakeName, ModelName, YearValue } from "../types/car";
 
 const CarSearch = () => {
     const [makes, setMakes] = useState<MakeDto[]>([]);
     const [models, setModels] = useState<ModelDto[]>([]);
-    const [years, setYears] = useState<YearsDto[]>([]);
+    const [years, setYears] = useState<YearDto[]>([]);
 
-    const [make, setMake] = useState<string | null>(null);
-    const [model, setModel] = useState<string | null>(null);
-    const [year, setYear] = useState<string | null>(null);
+    const [make, setMake] = useState<MakeName | null>(null);
+    const [model, setModel] = useState<ModelName | null>(null);
+    const [year, setYear] = useState<YearValue | null>(null);
 
-
-    ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+    //////////////////////////////// marques ////////////////////////////////
     useEffect(() => {
-        axios
-            .get<MakeDto[]>(`${API_BASE}/api/car/mark`, {
-            })
-            .then((res) => {
-                console.log(res.data);
-                setMakes(res.data);
-            })
-            .catch(console.error);
+        fetchMakes().then(setMakes).catch(console.error);
     }, []);
 
-
+    ////////////////////////// modèles quand la marque change /////////////////
     useEffect(() => {
-        setModels([]);
-        setYears([]);
-        setModel(null);
-        setYear(null);
-
+        setModels([]); setYears([]); setModel(null); setYear(null);
         if (!make) return;
-
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        axios
-            .get<ModelDto[]>(`${API_BASE}/api/car/model`, { params: { make } })
-            .then(({ data }) => setModels(data))
-            .catch(err => console.error("[/api/car/model]", err?.response?.status, err));
+        fetchModels(make).then(setModels).catch(console.error);
     }, [make]);
 
-
+    ///////////////////// années quand le modèle change //////////////////////////
     useEffect(() => {
-        setYears([]);
-        setYear(null);
-
+        setYears([]); setYear(null);
         if (!make || !model) return;
-////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
-        axios
-            .get<YearsDto[]>(`${API_BASE}/api/car/year`, { params: { make, model } })
-            .then((res) => setYears(res.data))
-            .catch(console.error);
-    }, [model]);
+        fetchYears(make, model).then(setYears).catch(console.error);
+    }, [make, model]);
+
+
+    const makeOptions: MakeName[]   = makes.map(m => m.name);
+    const modelOptions: ModelName[] = models.map(m => m.name);
+    const yearOptions: YearValue[]  = years.map(y => y.years);
 
     return (
         <Box display="flex" gap={2} flexWrap="wrap" mt={4} justifyContent="center">
-
             <Autocomplete
-                options={makes.map(m => m.name)}
+                options={makeOptions}
                 value={make}
-                onChange={(_, newValue) => setMake(newValue)}
+                onChange={(_, v) => setMake(v)}
                 sx={{ width: 250 }}
-                renderInput={(params) => <TextField {...params} label="Marque" />}
+                renderInput={(p) => <TextField {...p} label="Marque" />}
             />
-
             <Autocomplete
-                options={models.map(m => m.name)}
+                options={modelOptions}
                 value={model}
-                onChange={(_, newValue) => setModel(newValue)}
+                onChange={(_, v) => setModel(v)}
                 sx={{ width: 250 }}
                 disabled={!make}
-                renderInput={(params) => <TextField {...params} label="Modèle" />}
+                renderInput={(p) => <TextField {...p} label="Modèle" />}
             />
-
             <Autocomplete
-                options={years.map(m =>m.years)}
+                options={yearOptions}
                 value={year}
-                onChange={(_, newValue) => setYear(newValue)}
-                getOptionLabel={(option) => String(option)}
+                onChange={(_, v) => setYear(v)}
+                getOptionLabel={(o) => String(o)}
                 sx={{ width: 200 }}
                 disabled={!model}
-                renderInput={(params) => <TextField {...params} label="Année" />}
+                renderInput={(p) => <TextField {...p} label="Année" />}
             />
         </Box>
     );
