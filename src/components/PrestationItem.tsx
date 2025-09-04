@@ -1,13 +1,38 @@
+import { Button, Stack, Typography } from "@mui/material";
 import type { PrestationItem as Prestation } from "../types/prestationItem";
 
-type Props = { prestation: Prestation };
+type Props = {
+    prestation: Prestation;
+    selected?: boolean;
+    onToggle?: (p: Prestation) => void;
+};
 
-const PrestationItem = ({ prestation }: Props) => {
+const PrestationItem = ({ prestation, selected = false, onToggle }: Props) => {
+    const handleClick = () => {
+        if (onToggle) onToggle(prestation);
+    };
+
     return (
-        <div style={{ border: "1px solid #ddd", padding: 12, borderRadius: 8 }}>
-            <h3>{prestation.name}</h3>
-            <p>{prestation.description}</p>
-        </div>
+        <Button
+            type="button"
+            onClick={handleClick}
+            variant={selected ? "contained" : "outlined"}
+            color="primary"
+            sx={{
+                width: "100%",
+                justifyContent: "flex-start",
+                textTransform: "none",
+                borderWidth: 2,
+                p: 2,
+            }}
+        >
+            <Stack alignItems="flex-start" spacing={0.5}>
+                <Typography variant="subtitle1">{prestation.name}</Typography>
+                <Typography variant="body2" color="text.secondary">
+                    {prestation.description}
+                </Typography>
+            </Stack>
+        </Button>
     );
 };
 

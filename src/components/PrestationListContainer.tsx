@@ -9,36 +9,69 @@ const PrestationListContainer = () => {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+
+    const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
+
     useEffect(() => {
         axios
             .get<Prestation[]>("http://localhost:8080/services")
-            .then(res =>  {
+            .then((res) => {
                 console.log("[/services] data:", res.data);
                 setItems(res.data);
-            } )
-            .catch(err => setError(err?.message ?? "Erreur inconnue"))
+            })
+            .catch((err) => setError(err?.message ?? "Erreur inconnue"))
             .finally(() => setLoading(false));
-
-
     }, []);
+
+    const toggle = (p: Prestation) => {
+        const id = p.id;
+        setSelectedIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
 
     if (loading) return <p style={{ textAlign: "center" }}>Chargement…</p>;
     if (error) return <p style={{ textAlign: "center", color: "crimson" }}>Erreur : {error}</p>;
 
     return (
-        <Box
-            sx={{
-                mt: 3,
-                px: 2,
-                display: "grid",
-                gap: 2,
-                gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-            }}
-        >
-            {items.map((p) => (
-                <PrestationItem key={p.id} prestation={p} />
-            ))}
-        </Box>
+        <>
+            <h2
+                style={{
+                    padding: 16,
+                    marginTop: 40,
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                }}
+            >
+                Choisir prestations
+            </h2>
+
+            <Box
+                sx={{
+                    mt: 3,
+                    px: 2,
+                    display: "grid",
+                    gap: 2,
+                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
+                }}
+            >
+                {items.map((p) => (
+                    <PrestationItem
+                        key={p.id}
+                        prestation={p}
+                        selected={selectedIds.has(p.id)}
+                        onToggle={toggle}
+                    />
+                ))}
+            </Box>
+        </>
     );
 };
 
