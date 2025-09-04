@@ -15,14 +15,18 @@ type ModelDto = {
     name: string;
 }
 
+type YearsDto = {
+    years: string;
+}
+
 const CarSearch = () => {
     const [makes, setMakes] = useState<MakeDto[]>([]);
     const [models, setModels] = useState<ModelDto[]>([]);
-    const [years, setYears] = useState<number[]>([]);
+    const [years, setYears] = useState<YearsDto[]>([]);
 
     const [make, setMake] = useState<string | null>(null);
     const [model, setModel] = useState<string | null>(null);
-    const [year, setYear] = useState<number | null>(null);
+    const [year, setYear] = useState<string | null>(null);
 
 
     ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -61,7 +65,7 @@ const CarSearch = () => {
         if (!make || !model) return;
 ////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
         axios
-            .get<number[]>(`${API_BASE}/api/years/v2`, { params: { make, model } })
+            .get<YearsDto[]>(`${API_BASE}/api/car/year`, { params: { make, model } })
             .then((res) => setYears(res.data))
             .catch(console.error);
     }, [model]);
@@ -87,9 +91,10 @@ const CarSearch = () => {
             />
 
             <Autocomplete
-                options={years}
+                options={years.map(m =>m.years)}
                 value={year}
                 onChange={(_, newValue) => setYear(newValue)}
+                getOptionLabel={(option) => String(option)}
                 sx={{ width: 200 }}
                 disabled={!model}
                 renderInput={(params) => <TextField {...params} label="Année" />}
