@@ -1,25 +1,22 @@
 import { useEffect, useState } from "react";
-import axios from "axios";
 import { Box } from "@mui/material";
 import PrestationItem from "./PrestationItem";
 import type { PrestationItem as Prestation } from "../types/prestationItem";
+import { fetchServices } from "../api/services";
 
 const PrestationListContainer = () => {
     const [items, setItems] = useState<Prestation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
-
     const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
 
     useEffect(() => {
-        axios
-            .get<Prestation[]>("http://localhost:8080/services")
-            .then((res) => {
-                console.log("[/services] data:", res.data);
-                setItems(res.data);
-            })
-            .catch((err) => setError(err?.message ?? "Erreur inconnue"))
+        fetchServices()
+            .then(setItems)
+            .catch((e: unknown) =>
+                setError(e instanceof Error ? e.message : "Erreur inconnue")
+            )
             .finally(() => setLoading(false));
     }, []);
 
@@ -41,15 +38,7 @@ const PrestationListContainer = () => {
 
     return (
         <>
-            <h2
-                style={{
-                    padding: 16,
-                    marginTop: 40,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
+            <h2 style={{ padding: 16, marginTop: 40, display: "flex", justifyContent: "center" }}>
                 Choisir prestations
             </h2>
 
@@ -62,7 +51,7 @@ const PrestationListContainer = () => {
                     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
                 }}
             >
-                {items.map((p) => (
+                {items.map(p => (
                     <PrestationItem
                         key={p.id}
                         prestation={p}
