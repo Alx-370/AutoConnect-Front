@@ -4,6 +4,7 @@ import {Box, Button, TextField} from "@mui/material";
 import CarSearch from "../../components/CarSearch.tsx";
 import PrestationListContainer from "../../components/PrestationListContainer.tsx";
 import {useState} from "react";
+import BookingSteps from "../../components/BookingSteps.tsx";
 
 
 
@@ -70,10 +71,11 @@ const Dashboard = () => {
                 La tranquillité commence ici : comparez les meilleurs garages de votre
                 région et optez pour celui qui correspond le mieux à vos attentes.
             </p>
+                <BookingSteps />
 
             <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 20 }}>
                 <TextField
-                    sx={{ width: 180 }}
+                    sx={{ width: 180, ml:1 }}
                     id="outlined-basic"
                     label="Immatriculation"
                     variant="outlined"
@@ -81,7 +83,7 @@ const Dashboard = () => {
                     onChange={(e) => setImmat(e.target.value)}
                 />
                 <TextField
-                    sx={{ width: 180 }}
+                    sx={{ width: 180, mr:1 }}
                     id="outlined-basic2"
                     label="Kilométrage"
                     variant="outlined"
