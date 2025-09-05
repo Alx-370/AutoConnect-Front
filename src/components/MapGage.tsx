@@ -17,7 +17,7 @@ const MapGarage = () => {
     }, [setPosition]);
 
     return (
-        <Box sx={{display: "flex", width: "100%", height: "85vh" , pt: 4, pr: 4, pb: 1, pl: 4}}>
+        <Box sx={{display: "flex", width: "100%", height: "75vh" , pt: 4, pr: 4, pb: 1, pl: 4}}>
 
 
 
