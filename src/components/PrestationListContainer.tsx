@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Box } from "@mui/material";
+import {Box, Button} from "@mui/material";
 import PrestationItem from "./PrestationItem";
 import type { PrestationItem as Prestation } from "../types/prestationItem";
 import { fetchServices } from "../api/axiosServices";
@@ -14,7 +14,10 @@ const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
 
     useEffect(() => {
         fetchServices()
-            .then(setItems)
+            .then((data) => {
+                console.log("Services reçus :", data);
+                setItems(data);
+            })
             .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Erreur inconnue")
             )
@@ -23,8 +26,13 @@ const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
 
     const toggle = (p: Prestation) => onToggleId(p.id);
 
-    if (loading) return <p style={{ textAlign: "center" }}>Chargement…</p>;
-    if (error)   return <p style={{ textAlign: "center", color: "crimson" }}>Erreur : {error}</p>;
+
+    if (loading) return <Box style={{textAlign: "center"}}><Button loading loadingIndicator="Loading…"
+                                                                   variant="outlined">
+        Fetch data
+    </Button></Box>;
+    if (error) return <p style={{ textAlign: "center", color: "crimson" }}>Erreur : {error}</p>;
+
 
     return (
         <>
