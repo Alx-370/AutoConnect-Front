@@ -2,14 +2,15 @@ import { useEffect, useState } from "react";
 import { Box } from "@mui/material";
 import PrestationItem from "./PrestationItem";
 import type { PrestationItem as Prestation } from "../types/prestationItem";
-import { fetchServices } from "../api/axiosServices.ts";
+import { fetchServices } from "../api/axiosServices";
+import type { PrestationListContainerProps as Props } from "../types/propsPrestationItem";
 
-const PrestationListContainer = () => {
+
+
+const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
     const [items, setItems] = useState<Prestation[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-
-    const [selectedIds, setSelectedIds] = useState<Set<number | string>>(new Set());
 
     useEffect(() => {
         fetchServices()
@@ -20,21 +21,10 @@ const PrestationListContainer = () => {
             .finally(() => setLoading(false));
     }, []);
 
-    const toggle = (p: Prestation) => {
-        const id = p.id;
-        setSelectedIds(prev => {
-            const next = new Set(prev);
-            if (next.has(id)) {
-                next.delete(id);
-            } else {
-                next.add(id);
-            }
-            return next;
-        });
-    };
+    const toggle = (p: Prestation) => onToggleId(p.id);
 
     if (loading) return <p style={{ textAlign: "center" }}>Chargement…</p>;
-    if (error) return <p style={{ textAlign: "center", color: "crimson" }}>Erreur : {error}</p>;
+    if (error)   return <p style={{ textAlign: "center", color: "crimson" }}>Erreur : {error}</p>;
 
     return (
         <>
@@ -51,7 +41,7 @@ const PrestationListContainer = () => {
                     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
                 }}
             >
-                {items.map(p => (
+                {items.map((p) => (
                     <PrestationItem
                         key={p.id}
                         prestation={p}
