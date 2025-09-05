@@ -17,6 +17,7 @@ const GelocList = () => {
 
 
 
+
     useEffect(() => {
        axiosGeoloc(services, coordinate, radiusKm)
             .then((data) => {

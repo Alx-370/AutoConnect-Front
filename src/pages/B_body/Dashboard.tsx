@@ -5,10 +5,13 @@ import CarSearch from "../../components/CarSearch.tsx";
 import PrestationListContainer from "../../components/PrestationListContainer.tsx";
 import {useState} from "react";
 import BookingSteps from "../../components/BookingSteps.tsx";
+import {useNavigate} from "react-router";
 
 
 
 const Dashboard = () => {
+
+    const navigate = useNavigate();
 
     const [immat, setImmat] = useState("");
     const [km, setKm]       = useState("");
@@ -43,6 +46,7 @@ const Dashboard = () => {
         };
         localStorage.setItem("ac.selection", JSON.stringify(payload));
         console.log("saved:", payload);
+        navigate("/SearchGarage");
     };
 
     return (
