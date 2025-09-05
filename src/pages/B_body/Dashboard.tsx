@@ -2,13 +2,48 @@ import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
 import {Box, Button, TextField} from "@mui/material";
 import CarSearch from "../../components/CarSearch.tsx";
-
-
 import PrestationListContainer from "../../components/PrestationListContainer.tsx";
+import {useState} from "react";
 
 
 
 const Dashboard = () => {
+
+    const [immat, setImmat] = useState("");
+    const [km, setKm]       = useState("");
+    const [carSel, setCarSel] = useState<{ make: string|null; model: string|null; year: string|number|null }>
+    ({
+        make: null, model: null, year: null,
+    });
+
+    const [selectedServiceIds, setSelectedServiceIds] = useState<Set<number | string>>(new Set());
+
+    const toggleService = (id: number | string) => {
+        setSelectedServiceIds(prev => {
+            const next = new Set(prev);
+            if (next.has(id)) {
+                next.delete(id);
+            } else {
+                next.add(id);
+            }
+            return next;
+        });
+    };
+
+
+    const handleSave = () => {
+        const payload = {
+            immat,
+            km,
+            make: carSel.make,
+            model: carSel.model,
+            year: carSel.year,
+            services: Array.from(selectedServiceIds),
+        };
+        localStorage.setItem("ac.selection", JSON.stringify(payload));
+        console.log("saved:", payload);
+    };
+
     return (
         <>
             <Header />
@@ -42,46 +77,35 @@ const Dashboard = () => {
                     id="outlined-basic"
                     label="Immatriculation"
                     variant="outlined"
+                    value={immat}
+                    onChange={(e) => setImmat(e.target.value)}
                 />
                 <TextField
                     sx={{ width: 180 }}
                     id="outlined-basic2"
                     label="Kilométrage"
                     variant="outlined"
+                    value={km}
+                    onChange={(e) => setKm(e.target.value)}
                 />
             </div>
 
-            <CarSearch />
-            <PrestationListContainer />
+            <CarSearch onChangeCar={setCarSel} />
+            <PrestationListContainer  selectedIds={selectedServiceIds}
+                                      onToggleId={toggleService}/>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
-                <Button
-                    size="large"
-                    variant="outlined"
-                    color="primary"
-                    sx={{
-                        mt: 5,
-                        width: 300,
-                        px: 3,
-                        py: 1.25,
-                        fontWeight: 600,
-                        borderRadius: 3,
-                        textTransform: "none",
-
-                        border: "2px solid transparent",
-                        background:
-                            "linear-gradient(#fff, #fff) padding-box, linear-gradient(90deg,#1976d2,#2196f3) border-box",
-
-                        color: "primary.main",
-                        boxShadow: "0 6px 16px rgba(33,150,243,.18)",
-
-                        "&:hover": {
-                            background:
-                                "linear-gradient(#f6f9ff,#f6f9ff) padding-box, linear-gradient(90deg,#1565c0,#1e88e5) border-box",
-                            boxShadow: "0 8px 22px rgba(21,101,192,.28)",
-                        },
-                        "&:active": { transform: "translateY(1px)" },
-                    }}
-                >
+                    <Button
+                        onClick={handleSave}
+                        variant="contained"
+                        sx={{
+                            mt: 2,
+                            px: 3,
+                            py: 1,
+                            borderRadius: 2,
+                            textTransform: "none",
+                            boxShadow: 2,
+                        }}
+                    >
                     Enregistrer ma sélection
                 </Button>
                 </div>

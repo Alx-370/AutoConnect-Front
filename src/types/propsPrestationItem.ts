@@ -5,3 +5,8 @@ export type PrestationItemProps = {
     selected?: boolean;
     onToggle?: (p: PrestationItem) => void;
 };
+
+export type PrestationListContainerProps = {
+    selectedIds: Set<number | string>;
+    onToggleId: (id: number | string) => void;
+};

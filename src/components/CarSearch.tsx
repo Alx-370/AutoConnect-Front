@@ -1,9 +1,10 @@
 import { useEffect, useState } from "react";
 import { Autocomplete, TextField, Box } from "@mui/material";
 import { fetchMakes, fetchModels, fetchYears } from "../api/axiosCar.ts";
-import type { MakeDto, ModelDto, YearDto, MakeName, ModelName, YearValue } from "../types/car";
+import type {MakeDto, ModelDto, YearDto, MakeName, ModelName, YearValue, CarSearchProps} from "../types/car";
 
-const CarSearch = () => {
+
+const CarSearch = ({ onChangeCar }: CarSearchProps) => {
     const [makes, setMakes] = useState<MakeDto[]>([]);
     const [models, setModels] = useState<ModelDto[]>([]);
     const [years, setYears] = useState<YearDto[]>([]);
@@ -30,6 +31,11 @@ const CarSearch = () => {
         if (!make || !model) return;
         fetchYears(make, model).then(setYears).catch(console.error);
     }, [make, model]);
+
+    ///////////////////// récup info pour localStorage ///////////////////////////
+    useEffect(() => {
+        onChangeCar?.({ make, model, year });
+    }, [make, model, year, onChangeCar]);
 
 
     const makeOptions: MakeName[]   = makes.map(m => m.name);
