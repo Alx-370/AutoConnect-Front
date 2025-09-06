@@ -77,6 +77,10 @@ const Dashboard = () => {
             </p>
                 <BookingSteps />
 
+                <h2 style={{ padding: 16, marginTop: 40, display: "flex", justifyContent: "center" }}>
+                    Entrez informations véhicule
+                </h2>
+
             <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 20 }}>
                 <TextField
                     sx={{ width: 180, ml:1 }}
@@ -112,7 +116,7 @@ const Dashboard = () => {
                             boxShadow: 2,
                         }}
                     >
-                    Enregistrer ma sélection
+                    Enregistrer mes informations
                 </Button>
                 </div>
             </Box>
