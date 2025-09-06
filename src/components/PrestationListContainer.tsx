@@ -36,10 +36,22 @@ const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
 
     return (
         <>
+
             <h2 style={{ padding: 16, marginTop: 40, display: "flex", justifyContent: "center" }}>
                 Choisir prestations
             </h2>
 
+            <Box
+                sx={{
+                    maxWidth: 1150,
+                    p: { xs: 1.5, sm: 2.5 },
+                    borderRadius: 3,
+                    bgcolor: "rgba(172,172,172,.06)",
+                    border: (t) => `1px solid ${t.palette.divider}`,
+                    boxShadow: "0 10px 28px rgba(0,0,0,.06)",
+                    backdropFilter: "saturate(1.1) blur(2px)",
+                }}
+            >
             <Box
                 sx={{
                     mt: 3,
@@ -57,6 +69,7 @@ const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
                         onToggle={toggle}
                     />
                 ))}
+            </Box>
             </Box>
         </>
     );

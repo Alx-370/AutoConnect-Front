@@ -1,24 +1,23 @@
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
-import {Box, Button, TextField} from "@mui/material";
-import CarSearch from "../../components/CarSearch.tsx";
-import PrestationListContainer from "../../components/PrestationListContainer.tsx";
-import {useState} from "react";
-import BookingSteps from "../../components/BookingSteps.tsx";
-import {useNavigate} from "react-router";
-
+import {Box, Button, Typography} from "@mui/material";
+import CarSearch from "../../components/CarSearch";
+import PrestationListContainer from "../../components/PrestationListContainer";
+import BookingSteps from "../../components/BookingSteps";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router";
 
 
 const Dashboard = () => {
-
     const navigate = useNavigate();
 
     const [immat, setImmat] = useState("");
-    const [km, setKm]       = useState("");
-    const [carSel, setCarSel] = useState<{ make: string|null; model: string|null; year: string|number|null }>
-    ({
-        make: null, model: null, year: null,
-    });
+    const [km, setKm] = useState("");
+    const [carSel, setCarSel] = useState<{
+        make: string | null;
+        model: string | null;
+        year: string | number | null;
+    }>({ make: null, model: null, year: null });
 
     const [selectedServiceIds, setSelectedServiceIds] = useState<Set<number | string>>(new Set());
 
@@ -34,6 +33,18 @@ const Dashboard = () => {
         });
     };
 
+    const canContinue = useMemo(() => {
+        const hasService = selectedServiceIds.size > 0;
+        return (
+            immat.trim().length > 0 &&
+            km.trim().length > 0 &&
+            !!carSel.make &&
+            !!carSel.model &&
+            carSel.year !== null &&
+            carSel.year !== "" &&
+            hasService
+        );
+    }, [immat, km, carSel, selectedServiceIds]);
 
     const handleSave = () => {
         const payload = {
@@ -46,79 +57,47 @@ const Dashboard = () => {
         };
         localStorage.setItem("ac.selection", JSON.stringify(payload));
         console.log("saved:", payload);
-        navigate("/SearchGarage");
+        navigate("/search-garage");
     };
 
     return (
         <>
             <Header />
-            <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-            <h1
-                style={{
-                    padding: 16,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                AutoConnect
-            </h1>
+            <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <Typography variant="h4" sx={{ fontWeight: 700,padding: 5, marginTop: 1, display: "flex", justifyContent: "center" }}>
+                    AutoConnect
+                </Typography>
 
-            <p
-                style={{
-                    padding: 16,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                La tranquillité commence ici : comparez les meilleurs garages de votre
-                région et optez pour celui qui correspond le mieux à vos attentes.
-            </p>
-                <BookingSteps />
+                <p style={{ padding: 16, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    La tranquillité commence ici : comparez les meilleurs garages de votre région et optez
+                    pour celui qui correspond le mieux à vos attentes.
+                </p>
 
-                <h2 style={{ padding: 16, marginTop: 40, display: "flex", justifyContent: "center" }}>
-                    Entrez informations véhicule
-                </h2>
+                <BookingSteps activeStep={0} />
 
-            <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 20 }}>
-                <TextField
-                    sx={{ width: 180, ml:1 }}
-                    id="outlined-basic"
-                    label="Immatriculation"
-                    variant="outlined"
-                    value={immat}
-                    onChange={(e) => setImmat(e.target.value)}
+                <CarSearch
+                    immat={immat}
+                    km={km}
+                    onChangeImmat={setImmat}
+                    onChangeKm={setKm}
+                    onChangeCar={setCarSel}
                 />
-                <TextField
-                    sx={{ width: 180, mr:1 }}
-                    id="outlined-basic2"
-                    label="Kilométrage"
-                    variant="outlined"
-                    value={km}
-                    onChange={(e) => setKm(e.target.value)}
-                />
-            </div>
 
-            <CarSearch onChangeCar={setCarSel} />
-            <PrestationListContainer  selectedIds={selectedServiceIds}
-                                      onToggleId={toggleService}/>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <Button
                         onClick={handleSave}
                         variant="contained"
-                        sx={{
-                            mt: 2,
-                            px: 3,
-                            py: 1,
-                            borderRadius: 2,
-                            textTransform: "none",
-                            boxShadow: 2,
-                        }}
+                        disabled={!canContinue}
+                        sx={{ mt: 2, px: 3, py: 1, borderRadius: 2, textTransform: "none", boxShadow: 2 }}
                     >
-                    Enregistrer mes informations
-                </Button>
+                        Enregistrer mes informations
+                    </Button>
                 </div>
+
+                <PrestationListContainer
+                    selectedIds={selectedServiceIds}
+                    onToggleId={toggleService}
+                />
             </Box>
             <Footer />
         </>
