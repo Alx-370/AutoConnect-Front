@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import type {PrestationItem as Prestation} from "../types/prestationItem.ts";
+
 
 import {Box, Button} from "@mui/material";
 
@@ -7,18 +7,33 @@ import CardGeolocGarage from "./CardGeolocGarage.tsx";
 import type {Geoloc} from "../types/geoloc.ts";
 import {axiosGeoloc} from "../api/axiosGeoloc.ts";
 
-const GelocList = () => {
+type GelocListProps = {
+    searchQuery: string;
+    radiusKm : number;
+};
+const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
     const [items, setItems] = useState<Geoloc[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [coordinate, setCoordinate] = useState<string>("");
-    const [radiusKm, setRadiusKm] = useState<number>(10);
-    const [services, setServices] = useState<Prestation[]>([]);
-
+    const [services, setServices] = useState<number[]>([]);
 
 
     useEffect(() => {
-       axiosGeoloc(services, coordinate, radiusKm)
+        const saved = localStorage.getItem("ac.selection");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.services) {
+                    setServices(parsed.services);
+                }
+            } catch (e) {
+                console.error("Impossible de parser le localStorage", e);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+       axiosGeoloc(services, searchQuery, radiusKm)
             .then((data) => {
                 console.log("Services reçus :", data);
                 setItems(data);
@@ -27,7 +42,7 @@ const GelocList = () => {
                 setError(e instanceof Error ? e.message : "Erreur inconnue")
             )
             .finally(() => setLoading(false));
-    }, []);
+    }, [searchQuery]);
 
 
 
@@ -49,10 +64,10 @@ const GelocList = () => {
                     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
                 }}
             >
-                {items.map(garage => (
-                    <CardGeolocGarage key={garage.id} geoloc={garage}/>
-                ))}
-
+                {items.map(garage => {
+                    console.log(garage); // log ici
+                    return <CardGeolocGarage key={garage.id} geoloc={garage}/>;
+                })}
 
             </Box>
         </>
