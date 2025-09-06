@@ -33,6 +33,7 @@ const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
     }, []);
 
     useEffect(() => {
+        setError(null)
        axiosGeoloc(services, searchQuery, radiusKm)
             .then((data) => {
                 console.log("Services reçus :", data);
@@ -64,10 +65,9 @@ const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
                     gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
                 }}
             >
-                {items.map(garage => {
-                    console.log(garage); // log ici
-                    return <CardGeolocGarage key={garage.id} geoloc={garage}/>;
-                })}
+                {items.map(garage => (
+                    <CardGeolocGarage key={garage.id} geoloc={garage}/>
+                ))}
 
             </Box>
         </>

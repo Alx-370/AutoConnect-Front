@@ -1,7 +1,7 @@
 import {Box, FormControl, IconButton, InputBase, MenuItem, Paper, Select} from "@mui/material";
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
-import MapGarage from "../../components/MapGage.tsx";
+import MapGarage from "../../components/MapGarage.tsx";
 import "leaflet/dist/leaflet.css";
 import BookingSteps from "../../components/BookingSteps.tsx";
 import GelocList from "../../components/GelocList.tsx";
