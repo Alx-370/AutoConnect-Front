@@ -5,9 +5,10 @@ import type {Geoloc} from "../types/geoloc";
 
 interface CardGeolocGarageProps {
     geoloc: Geoloc;
+    onResult?: (coords: [number, number]) => void;
 }
 
-const CardGeolocGarage = ({geoloc}: CardGeolocGarageProps) => {
+const CardGeolocGarage = ({geoloc, onResult}: CardGeolocGarageProps) => {
     return (
         <Card
             sx={{
@@ -17,7 +18,9 @@ const CardGeolocGarage = ({geoloc}: CardGeolocGarageProps) => {
                 borderRadius: 2,
                 boxShadow: 2,
                 minWidth: 280,
+               
             }}
+            onClick={() => onResult([geoloc.latitude, geoloc.longitude])}
         >
 
             <Avatar sx={{bgcolor: "primary.main", mr: 2}}>

@@ -30,6 +30,7 @@ export async function axiosGeolocWithGPS(payload: number[], latitude: number, lo
         }
     });
 
+
     return data;
 
 }
