@@ -176,7 +176,7 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
                     </Stack>
 
                     <Box display="flex" gap={2} flexWrap="wrap" mt={4} justifyContent="center">
-                        {/* ////////////////////// Marque /////////////////////////////////////// */}
+                        {/* //////////////////////////// Marque ///////////////////////////////////////////// */}
                         <Autocomplete<string, false, false, true>
                             freeSolo
                             selectOnFocus
@@ -190,7 +190,7 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
                             renderInput={(p) => <TextField {...p} label="Marque" placeholder="ex: Peugeot" />}
                         />
 
-                        {/* ///////////////////////////// Modèle /////////////////////////////////////////////// */}
+                        {/* ////////////////////////////////// Modèle /////////////////////////////////////////////// */}
                         <Autocomplete<string, false, false, true>
                             freeSolo
                             selectOnFocus
