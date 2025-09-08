@@ -7,7 +7,6 @@ import {Box} from "@mui/material";
 
 
 
-
 const MapGarage = () => {
     const [position, setPosition] = useState<LatLngTuple>([0, 0]);
     const center: LatLngTuple = [46.7036, 0.8489];
