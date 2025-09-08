@@ -1,5 +1,5 @@
 import {useEffect, useState} from "react";
-import type {PrestationItem as Prestation} from "../types/prestationItem.ts";
+
 
 import {Box, Button} from "@mui/material";
 
@@ -7,28 +7,46 @@ import CardGeolocGarage from "./CardGeolocGarage.tsx";
 import type {Geoloc} from "../types/geoloc.ts";
 import {axiosGeoloc} from "../api/axiosGeoloc.ts";
 
-const GelocList = () => {
+type GelocListProps = {
+    searchQuery: string;
+    radiusKm : number;
+    onResult: (garages: Geoloc[]) => void
+    onServices?: (services: number[]) => void
+};
+const GelocList = ({searchQuery, radiusKm, onResult, onServices}: GelocListProps) => {
     const [items, setItems] = useState<Geoloc[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
-    const [coordinate, setCoordinate] = useState<string>("");
-    const [radiusKm, setRadiusKm] = useState<number>(10);
-    const [services, setServices] = useState<Prestation[]>([]);
-
+    const [services, setServices] = useState<number[]>([]);
 
 
 
     useEffect(() => {
-       axiosGeoloc(services, coordinate, radiusKm)
+        const saved = localStorage.getItem("ac.selection");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.services) {
+                    setServices(parsed.services);
+                    onServices?.(parsed.services);
+                }
+            } catch (e) {
+                console.error("Impossible de parser le localStorage", e);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        setError(null)
+       axiosGeoloc(services, searchQuery, radiusKm)
             .then((data) => {
-                console.log("Services reçus :", data);
-                setItems(data);
+                onResult(data);
             })
             .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Erreur inconnue")
             )
             .finally(() => setLoading(false));
-    }, []);
+    }, [searchQuery]);
 
 
 
@@ -38,26 +56,7 @@ const GelocList = () => {
     </Button></Box>;
     if (error) return <p style={{textAlign: "center", color: "crimson"}}>Erreur : {error}</p>;
 
-    return (
-        <>
-
-            <Box
-                sx={{
-                    mt: 3,
-                    px: 2,
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                }}
-            >
-                {items.map(garage => (
-                    <CardGeolocGarage key={garage.id} geoloc={garage}/>
-                ))}
-
-
-            </Box>
-        </>
-    );
+    return null;
 };
 
 export default GelocList;
