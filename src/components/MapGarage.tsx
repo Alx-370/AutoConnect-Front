@@ -13,6 +13,7 @@ type MapProps = {
     userPosition?: [number, number] | null;
 };
 
+
 const MapGarage = ({garages, services, radius, switchCoordinate, userPosition }: MapProps) => {
     const [newGarage, setNewGarages] = useState<Geoloc[]>([]);
     const defaultCenter: [number, number] = [48.866667, 2.333333];
