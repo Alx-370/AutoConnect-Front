@@ -5,17 +5,9 @@ import BuildIcon from "@mui/icons-material/Build";
 import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PrintIcon from "@mui/icons-material/Print";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import type { QuoteLS, ServiceItem } from "../types/quote";
 
-type QuoteLS = {
-    immat?: string;
-    km?: string;
-    make?: string | null;
-    model?: string | null;
-    year?: number | string | null;
-    services?: Array<number | string>;
-};
 
-type ServiceItem = { id: number; name: string; price: number };
 
 const SERVICE_CATALOG: Record<number, ServiceItem> = {
     1:  { id: 1,  name: "Vidange + Filtre à Huile",     price: 89 },
