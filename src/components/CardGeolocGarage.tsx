@@ -1,14 +1,24 @@
-import {Card, CardContent, Typography, Box, Avatar} from "@mui/material";
+import {Card, CardContent, Typography, Box, Avatar, Button} from "@mui/material";
 import StoreIcon from "@mui/icons-material/Store"; // l'icône boutique
 
 import type {Geoloc} from "../types/geoloc";
+import {useState} from "react";
+import {useNavigate} from "react-router";
 
 interface CardGeolocGarageProps {
     geoloc: Geoloc;
     onResult?: (coords: [number, number]) => void;
+    isOpen: boolean;
+    onSelect: (id: number) => void;
 }
 
-const CardGeolocGarage = ({geoloc, onResult}: CardGeolocGarageProps) => {
+const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarageProps) => {
+    const[show , setShow] = useState(false);
+    const navigate = useNavigate();
+    const handleCardClick = () => {
+        onResult?.([geoloc.latitude, geoloc.longitude]);
+        onSelect(geoloc.id); // dit au parent : "c’est moi le sélectionné"
+    };
     return (
         <Card
             sx={{
@@ -18,9 +28,11 @@ const CardGeolocGarage = ({geoloc, onResult}: CardGeolocGarageProps) => {
                 borderRadius: 2,
                 boxShadow: 2,
                 minWidth: 280,
-               
+                m:2,
+
             }}
-            onClick={() => onResult([geoloc.latitude, geoloc.longitude])}
+            onClick={handleCardClick}
+
         >
 
             <Avatar sx={{bgcolor: "primary.main", mr: 2}}>
@@ -37,6 +49,19 @@ const CardGeolocGarage = ({geoloc, onResult}: CardGeolocGarageProps) => {
                     {geoloc.typeVoie} {geoloc.libelleVoie}, {geoloc.codePostal}{" "}
                     {geoloc.libelleCommune}
                 </Typography>
+                {isOpen && (
+                    <Button
+                        variant="contained"
+                        color="primary"
+                        sx={{mt: 2}}
+                        onClick={(e) => {
+                            e.stopPropagation();
+                            navigate(`/search-appointment-garage`);
+                        }}
+                    >
+                        Prendre rendez-vous
+                    </Button>
+                )}
             </CardContent>
         </Card>
     );

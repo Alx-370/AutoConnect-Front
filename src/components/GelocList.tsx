@@ -37,24 +37,21 @@ const GelocList = ({searchQuery, radiusKm, onResult, onServices}: GelocListProps
     }, []);
 
     useEffect(() => {
-        setError(null)
-       axiosGeoloc(services, searchQuery, radiusKm)
-            .then((data) => {
-                onResult(data);
-            })
+        if (!searchQuery) return; // on sort si rien à chercher
+        setError(null);
+
+
+        axiosGeoloc(services, searchQuery, radiusKm)
+            .then((data) => onResult(data))
             .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Erreur inconnue")
             )
-            .finally(() => setLoading(false));
-    }, [searchQuery]);
+
+    }, [searchQuery, services, radiusKm, onResult]);
 
 
 
-    if (loading) return <Box style={{textAlign: "center"}}><Button loading loadingIndicator="Loading…"
-                                                                   variant="outlined">
-        Fetch data
-    </Button></Box>;
-    if (error) return <p style={{textAlign: "center", color: "crimson"}}>Erreur : {error}</p>;
+    if (error) return <p style={{textAlign: "center"}}>aucun garage trouver</p>;
 
     return null;
 };

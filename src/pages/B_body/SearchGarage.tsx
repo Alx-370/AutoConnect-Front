@@ -5,7 +5,7 @@ import MapGarage from "../../components/MapGarage.tsx";
 import "leaflet/dist/leaflet.css";
 import BookingSteps from "../../components/BookingSteps.tsx";
 import GelocList from "../../components/GelocList.tsx";
-import {useState} from "react";
+import {useEffect, useState} from "react";
 import SearchIcon from '@mui/icons-material/Search';
 import PlaceIcon from '@mui/icons-material/Place';
 import type {Geoloc} from "../../types/geoloc.ts";
@@ -15,7 +15,7 @@ import {axiosGeolocWithGPS} from "../../api/axiosGeoloc.ts";
 
 const SearchGarage = () => {
     const [garages, setGarages] = useState<Geoloc[]>([]);
-    const [focused, setFocused] = useState(false);
+    const [selectedId, setSelectedId] = useState<number | null>(null);
     const [radius, setRadius] = useState(10);
     const [show, setshow] = useState(false);
     const [searchText, setSearchText] = useState("");
@@ -34,6 +34,7 @@ const SearchGarage = () => {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
                 setUserCoords({lat, lon});
+                setshow(true);
                 console.log("Coordonnées récupérées :", lat, lon);
                 console.log("Services sélectionnés :", services);
                 axiosGeolocWithGPS(services,lat, lon, radius).then(
@@ -51,14 +52,22 @@ const SearchGarage = () => {
                     "Services sélectionnés :",
                     services
                 )
-                setshow(true);
             },
             (err) => {
                 console.error("Erreur de géolocalisation :", err);
                 alert("Impossible de récupérer votre position.");
             }
         );
+
     };
+    useEffect(() => {
+        if (userCoords) {
+            axiosGeolocWithGPS(services, userCoords.lat, userCoords.lon, radius).then((data) => {
+                setGarages(data);
+            });
+        }
+    }, [radius]);
+
     return (
         <>
             <Header/>
@@ -98,13 +107,16 @@ const SearchGarage = () => {
                         </FormControl>
 
                     </Paper>
-                    <Box sx={{display: show ? "block" : "none"}}>
+                    <Box sx={{display: show ? "block" : "none", m: 2}}>
                         <GelocList searchQuery={searchText} radiusKm={radius} onResult={setGarages}
                                    onServices={(setServices)}/>
                         {garages.map(garage => (
-                            <CardGeolocGarage key={garage.id} geoloc={garage} onResult={setCoordinate}/>
+                            <CardGeolocGarage key={garage.id} geoloc={garage} onResult={setCoordinate}
+                                              isOpen={selectedId === garage.id}
+                                              onSelect={setSelectedId}/>
                         ))}
                     </Box>
+
                 </Box>
 
 

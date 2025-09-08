@@ -24,7 +24,7 @@ const MapGarage = ({garages, services, radius, switchCoordinate, userPosition }:
 
     const [mapCenter, setMapCenter] = useState<[number, number]>(initialCenter);
 
-    // RecenterMap utilise d'abord switchCoordinate si défini, sinon userPosition
+
     const RecenterMap = () => {
         const map = useMap();
         useEffect(() => {
@@ -45,7 +45,7 @@ const MapGarage = ({garages, services, radius, switchCoordinate, userPosition }:
     }, [mapCenter, services, radius]);
 
     return (
-        <Box sx={{display: "flex", width: "100%", height: "75vh", p: 2}}>
+        <Box sx={{display: "flex", width: "100%", height: "75vh", p: 2, }}>
             <MapContainer
                 center={mapCenter}
                 zoom={13}
