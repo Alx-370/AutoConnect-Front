@@ -1,9 +1,5 @@
 import {useEffect, useState} from "react";
 
-
-import {Box, Button} from "@mui/material";
-
-import CardGeolocGarage from "./CardGeolocGarage.tsx";
 import type {Geoloc} from "../types/geoloc.ts";
 import {axiosGeoloc} from "../api/axiosGeoloc.ts";
 

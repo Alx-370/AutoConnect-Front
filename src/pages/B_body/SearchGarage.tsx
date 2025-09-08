@@ -1,4 +1,4 @@
-import {Box, FormControl, IconButton, InputBase, MenuItem, Paper, Select} from "@mui/material";
+import {Box, Card, CardHeader, FormControl, IconButton, InputBase, MenuItem, Paper, Select, Stack, Typography} from "@mui/material";
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
 import MapGarage from "../../components/MapGarage.tsx";
@@ -8,10 +8,13 @@ import GelocList from "../../components/GelocList.tsx";
 import {useEffect, useState} from "react";
 import SearchIcon from '@mui/icons-material/Search';
 import PlaceIcon from '@mui/icons-material/Place';
+import GarageIcon from "@mui/icons-material/Garage";
 import type {Geoloc} from "../../types/geoloc.ts";
 import CardGeolocGarage from "../../components/CardGeolocGarage.tsx";
 import {axiosGeolocWithGPS} from "../../api/axiosGeoloc.ts";
 
+
+const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 
 const SearchGarage = () => {
     const [garages, setGarages] = useState<Geoloc[]>([]);
@@ -73,6 +76,18 @@ const SearchGarage = () => {
             <Header/>
 
             <BookingSteps activeStep={1} />
+            <Card sx={{ maxWidth: 1250, mt: 5, mx: "auto", borderRadius: 3, overflow: "hidden", boxShadow: "0 10px 28px rgba(0,0,0,.10)" }}>
+                <CardHeader
+                    avatar={<GarageIcon sx={{ color: "white" }} />}
+                    title={
+                        <Stack direction="row" justifyContent="space-between" alignItems="center">
+                            <Typography variant="h6" fontWeight={800}>Trouvez votre garage</Typography>
+
+                        </Stack>
+                    }
+
+                    sx={{ background: GRADIENT, color: "white", "& .MuiCardHeader-title": { fontWeight: 800 } }}
+                />
 
             <Box sx={{display: "flex", width: "100%", height: "85vh"}}>
 
@@ -125,6 +140,7 @@ const SearchGarage = () => {
 
                 </Box>
             </Box>
+                </Card>
 
             <Footer/>
         </>
