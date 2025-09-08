@@ -3,6 +3,7 @@ import Footer from "../C_footer/Footer.tsx";
 import BookingSteps from "../../components/BookingSteps.tsx";
 import {Box, Typography} from "@mui/material";
 import QuoteCard from "../../components/QuoteCard.tsx";
+import BookingCalendar from "../../components/BookingCalendar.tsx";
 
 
 const SearchAppointmentGarage= () => {
@@ -15,7 +16,10 @@ const SearchAppointmentGarage= () => {
                 </Typography>
             <BookingSteps activeStep={2} />
             </Box>
+            <Box sx={{display: "flex", flexDirection: "raw", justifyContent: "space-around"}}>
             <QuoteCard />
+            <BookingCalendar />
+            </Box>
         <Footer />
         </>
     )
