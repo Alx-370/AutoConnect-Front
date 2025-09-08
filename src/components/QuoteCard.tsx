@@ -16,6 +16,7 @@ type QuoteLS = {
 };
 
 type ServiceItem = { id: number; name: string; price: number };
+
 const SERVICE_CATALOG: Record<number, ServiceItem> = {
     1:  { id: 1,  name: "Vidange + Filtre à Huile",     price: 89 },
     2:  { id: 2,  name: "Pneumatiques",                  price: 90 },
@@ -30,6 +31,7 @@ const SERVICE_CATALOG: Record<number, ServiceItem> = {
     11: { id: 11, name: "Bougies / Préchauffage",        price: 89 },
     12: { id: 12, name: "Embrayage",                     price: 690 },
 };
+
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
@@ -100,7 +102,7 @@ const QuoteCard = () => {
             quoteNumber,
             validatedAt: new Date().toISOString(),
         };
-        localStorage.setItem("ac.quote", JSON.stringify(payload));
+        localStorage.setItem("ac.selection", JSON.stringify(payload));
 
     };
 
