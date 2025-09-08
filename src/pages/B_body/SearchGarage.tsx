@@ -61,8 +61,8 @@ const SearchGarage = () => {
     return (
         <>
             <Header/>
-            <BookingSteps/>
 
+            <BookingSteps activeStep={1} />
 
             <Box sx={{display: "flex", width: "100%", height: "85vh"}}>
 

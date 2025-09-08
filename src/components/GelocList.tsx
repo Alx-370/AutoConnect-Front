@@ -20,6 +20,7 @@ const GelocList = ({searchQuery, radiusKm, onResult, onServices}: GelocListProps
     const [services, setServices] = useState<number[]>([]);
 
 
+
     useEffect(() => {
         const saved = localStorage.getItem("ac.selection");
         if (saved) {
