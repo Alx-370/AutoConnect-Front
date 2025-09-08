@@ -10,8 +10,10 @@ import {axiosGeoloc} from "../api/axiosGeoloc.ts";
 type GelocListProps = {
     searchQuery: string;
     radiusKm : number;
+    onResult: (garages: Geoloc[]) => void
+    onServices?: (services: number[]) => void
 };
-const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
+const GelocList = ({searchQuery, radiusKm, onResult, onServices}: GelocListProps) => {
     const [items, setItems] = useState<Geoloc[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
@@ -25,6 +27,7 @@ const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
                 const parsed = JSON.parse(saved);
                 if (parsed.services) {
                     setServices(parsed.services);
+                    onServices?.(parsed.services);
                 }
             } catch (e) {
                 console.error("Impossible de parser le localStorage", e);
@@ -36,8 +39,7 @@ const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
         setError(null)
        axiosGeoloc(services, searchQuery, radiusKm)
             .then((data) => {
-                console.log("Services reçus :", data);
-                setItems(data);
+                onResult(data);
             })
             .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Erreur inconnue")
@@ -53,25 +55,7 @@ const GelocList = ({searchQuery, radiusKm}: GelocListProps) => {
     </Button></Box>;
     if (error) return <p style={{textAlign: "center", color: "crimson"}}>Erreur : {error}</p>;
 
-    return (
-        <>
-
-            <Box
-                sx={{
-                    mt: 3,
-                    px: 2,
-                    display: "grid",
-                    gap: 2,
-                    gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))",
-                }}
-            >
-                {items.map(garage => (
-                    <CardGeolocGarage key={garage.id} geoloc={garage}/>
-                ))}
-
-            </Box>
-        </>
-    );
+    return null;
 };
 
 export default GelocList;
