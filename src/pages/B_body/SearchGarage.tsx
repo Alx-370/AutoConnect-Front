@@ -21,7 +21,7 @@ const SearchGarage = () => {
     const [searchText, setSearchText] = useState("");
     const [userCoords, setUserCoords] = useState<{ lat: number; lon: number } | null>(null);
     const [services, setServices] = useState<number[]>([]);
-
+    const [coordinate, setCoordinate] = useState<[number, number] | null>(null);
 
     const handleGeolocClick = () => {
         if (!navigator.geolocation) {
@@ -33,6 +33,7 @@ const SearchGarage = () => {
             (pos) => {
                 const lat = pos.coords.latitude;
                 const lon = pos.coords.longitude;
+                setUserCoords({lat, lon});
                 console.log("Coordonnées récupérées :", lat, lon);
                 console.log("Services sélectionnés :", services);
                 axiosGeolocWithGPS(services,lat, lon, radius).then(
@@ -42,7 +43,7 @@ const SearchGarage = () => {
                 )
 
 
-                setUserCoords({lat, lon});
+
                 console.log(
                     "Coordonnées récupérées :",
                     lat,
@@ -101,14 +102,14 @@ const SearchGarage = () => {
                         <GelocList searchQuery={searchText} radiusKm={radius} onResult={setGarages}
                                    onServices={(setServices)}/>
                         {garages.map(garage => (
-                            <CardGeolocGarage key={garage.id} geoloc={garage}/>
+                            <CardGeolocGarage key={garage.id} geoloc={garage} onResult={setCoordinate}/>
                         ))}
                     </Box>
                 </Box>
 
 
                 <Box sx={{flex: 2}}>
-                    <MapGarage  garages={garages}/>
+                    <MapGarage  garages={garages}   switchCoordinate={coordinate} userPosition={userCoords ? [userCoords.lat, userCoords.lon] : null} />
 
                 </Box>
             </Box>
