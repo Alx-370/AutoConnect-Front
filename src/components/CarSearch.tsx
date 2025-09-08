@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import {Accordion, AccordionSummary, AccordionDetails, Autocomplete, TextField, Box, Stack, Typography, Chip, Button,} from "@mui/material";
+import {Accordion, AccordionSummary, AccordionDetails, Autocomplete, TextField, Box, Stack, Typography, Chip, Button} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DirectionsCarFilledIcon from "@mui/icons-material/DirectionsCarFilled";
 import { fetchMakes, fetchModels, fetchYears } from "../api/axiosCar";
@@ -18,43 +18,43 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
 
     const [expanded, setExpanded] = useState<boolean>(true);
 
-    // Marques
+    //////////////////////// Marques ///////////////////////////////////////
     useEffect(() => {
         fetchMakes().then(setMakes).catch(console.error);
     }, []);
 
-    // Modèles quand la marque change
+    /////////////////////// Modèles quand la marque change /////////////////
     useEffect(() => {
         setModels([]); setYears([]); setModel(null); setYear(null);
         if (!make) return;
         fetchModels(make).then(setModels).catch(console.error);
     }, [make]);
 
-    // Années quand le modèle change
+    ////////////// Années quand le modèle change /////////////////////////////
     useEffect(() => {
         setYears([]); setYear(null);
         if (!make || !model) return;
         fetchYears(make, model).then(setYears).catch(console.error);
     }, [make, model]);
 
-    // Remonter la sélection au parent (localStorage côté Dashboard)
+    ///////////// Remonter la sélection au parent ///////////////////////////
     useEffect(() => {
         onChangeCar?.({ make, model, year });
     }, [make, model, year, onChangeCar]);
 
-    const makeOptions: MakeName[]   = makes.map(m => m.name);
-    const modelOptions: ModelName[] = models.map(m => m.name);
-    const yearOptions: YearValue[]  = years.map(y => y.years);
+    const makeOptions: string[]  = makes.map(m => m.name);
+    const modelOptions: string[] = models.map(m => m.name);
+    const yearOptions: string[]  = years.map(y => String(y.years));
 
-    // Chips de résumé dans l’entête
+    /////////////////////// Chips de résumé ////////////////////////////////
     const chips: string[] = [
         immat ? `Immat: ${immat}` : "",
         km ? `Km: ${km}` : "",
         make ?? "",
         model ?? "",
-        year !== null && year !== undefined ? String(year) : "",
+        year != null ? String(year) : "",
     ].filter(Boolean);
-
+    ////////////////// le reset ////////////////////////////////////////////
     const handleReset = () => {
         setMake(null); setModel(null); setYear(null);
         onChangeCar?.({ make: null, model: null, year: null });
@@ -62,11 +62,19 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
         onChangeKm?.("");
     };
 
+    const commitMake  = (_: unknown, v: string | null) => setMake(v?.trim() || null);
+    const commitModel = (_: unknown, v: string | null) => setModel(v?.trim() || null);
+    const commitYear  = (_: unknown, v: string | null) => {
+        const digits = (v ?? "").replace(/\D/g, "");
+        const n = digits ? Number(digits) : NaN;
+        setYear(Number.isFinite(n) ? n : null);
+    };
+
     return (
         <>
             <Typography
                 variant="h5"
-                sx={{ fontWeight: 700, padding: 6, mt: 1, display: "flex", justifyContent: "center" }}
+                sx={{ fontWeight: 700, p: 6, mt: 1, display: "flex", justifyContent: "center" }}
             >
                 Entrez informations véhicule
             </Typography>
@@ -94,20 +102,12 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
                     }}
                 >
                     <Stack spacing={1}>
-                        <Stack direction="row" spacing={1} display={"flex"} flexDirection={"column"} alignItems="center">
+                        <Stack direction="row" spacing={1}  display={"flex"} flexDirection={"column"} alignItems="center">
                             <DirectionsCarFilledIcon />
-                            <Typography variant="h6" fontWeight={700}>
-                                Infos véhicule
-                            </Typography>
+                            <Typography variant="h6" fontWeight={700}>Infos véhicule</Typography>
                             <Typography
                                 variant="caption"
-                                sx={{
-                                    ml: 1,
-                                    px: 1,
-                                    py: 0.25,
-                                    borderRadius: 1,
-                                    bgcolor: "rgba(255,255,255,.18)",
-                                }}
+                                sx={{ ml: 1, px: 1, py: 0.25, borderRadius: 1, bgcolor: "rgba(255,255,255,.18)" }}
                             >
                                 {chips.length > 0 ? "Résumé rempli" : "Aucune info"}
                             </Typography>
@@ -145,12 +145,7 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
                     </Stack>
                 </AccordionSummary>
 
-                <AccordionDetails
-                    sx={{
-                        p: { xs: 1.5, sm: 2.5 },
-                        bgcolor: "rgba(172,172,172,.06)",
-                    }}
-                >
+                <AccordionDetails sx={{ p: { xs: 1.5, sm: 2.5 }, bgcolor: "rgba(172,172,172,.06)" }}>
                     <Stack spacing={2} alignItems="center">
                         <Typography variant="h6" sx={{ fontWeight: 700 }}>
                             Vos informations principales
@@ -181,29 +176,69 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
                     </Stack>
 
                     <Box display="flex" gap={2} flexWrap="wrap" mt={4} justifyContent="center">
-                        <Autocomplete<MakeName>
+                        {/* //////////////////////////// Marque ///////////////////////////////////////////// */}
+                        <Autocomplete<string, false, false, true>
+                            freeSolo
+                            selectOnFocus
+                            clearOnBlur
+                            handleHomeEndKeys
                             options={makeOptions}
-                            value={make}
-                            onChange={(_, v) => setMake(v)}
+                            value={make ?? ""}
+                            onChange={commitMake}
+                            onInputChange={(_, v) => setMake(v?.trim() || null)}
                             sx={{ width: 250 }}
-                            renderInput={(p) => <TextField {...p} label="Marque" />}
+                            renderInput={(p) => <TextField {...p} label="Marque" placeholder="ex: Peugeot" />}
                         />
-                        <Autocomplete<ModelName>
+
+                        {/* ////////////////////////////////// Modèle /////////////////////////////////////////////// */}
+                        <Autocomplete<string, false, false, true>
+                            freeSolo
+                            selectOnFocus
+                            clearOnBlur
+                            handleHomeEndKeys
                             options={modelOptions}
-                            value={model}
-                            onChange={(_, v) => setModel(v)}
+                            value={model ?? ""}
+                            onChange={commitModel}
+                            onInputChange={(_, v) => setModel(v?.trim() || null)}
                             sx={{ width: 250 }}
                             disabled={!make}
-                            renderInput={(p) => <TextField {...p} label="Modèle" />}
+                            renderInput={(p) => <TextField {...p} label="Modèle" placeholder="ex: 308" />}
                         />
-                        <Autocomplete<YearValue>
+
+                        {/* ///////////////////////////////////////// Année ////////////////////////////////////////////////*/}
+                        <Autocomplete<string, false, false, true>
+                            freeSolo
+                            selectOnFocus
+                            clearOnBlur
+                            handleHomeEndKeys
                             options={yearOptions}
-                            value={year}
-                            onChange={(_, v) => setYear(v)}
-                            getOptionLabel={(o) => String(o)}
+                            value={year != null ? String(year) : ""}
+                            onChange={commitYear}
+                            onInputChange={(_, v) => {
+                                const digits = (v ?? "").replace(/\D/g, "");
+                                const n = digits ? Number(digits) : NaN;
+                                setYear(Number.isFinite(n) ? n : null);
+                            }}
                             sx={{ width: 200 }}
                             disabled={!model}
-                            renderInput={(p) => <TextField {...p} label="Année" />}
+                            renderInput={(p) => (
+                                <TextField
+                                    {...p}
+                                    label="Année"
+                                    placeholder="ex: 2018"
+                                    slotProps={{
+                                        input: {
+                                            inputProps: {
+                                                ...p.inputProps,
+                                                inputMode: "numeric",
+                                                pattern: "[0-9]*",
+                                                maxLength: 4,
+                                                autoComplete: "off",
+                                            },
+                                        },
+                                    }}
+                                />
+                            )}
                         />
                     </Box>
 
