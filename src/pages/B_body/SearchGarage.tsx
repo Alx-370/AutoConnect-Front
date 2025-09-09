@@ -48,7 +48,7 @@ const SearchGarage = () => {
         );
     };
 
-    // Recharger la liste quand radius/services/coords changent
+
     useEffect(() => {
         if (userCoords) {
             axiosGeolocWithGPS(services, userCoords.lat, userCoords.lon, radius).then((data) =>
@@ -95,7 +95,6 @@ const SearchGarage = () => {
                         gridTemplateColumns: { xs: "1fr", md: "1fr 2fr" },
                         gap: 2,
                         width: "100%",
-                        // hauteur flexible : auto sur mobile, "vh" confortable sur desktop
                         minHeight: { xs: "auto", md: "70vh" },
                     }}
                 >
@@ -162,7 +161,7 @@ const SearchGarage = () => {
                                 maxHeight: { xs: "40vh", md: "calc(70vh - 72px)" },
                             }}
                         >
-                            {/* ⚠️ correction : passer directement setServices, pas (setServices) */}
+
                             <GelocList
                                 searchQuery={searchText}
                                 radiusKm={radius}
@@ -188,10 +187,9 @@ const SearchGarage = () => {
                         </Box>
                     </Box>
 
-                    {/* Colonne droite : carte */}
+
                     <Box
                         sx={{
-                            // occupe toute la largeur sur mobile (sous la liste), 2/3 en desktop
                             px: { xs: 1.5, sm: 2 },
                             pb: { xs: 2, md: 2 },
                         }}
