@@ -13,7 +13,6 @@ type MapProps = {
     userPosition?: [number, number] | null;
 };
 
-
 const MapGarage = ({garages, services, radius, switchCoordinate, userPosition }: MapProps) => {
     const [newGarage, setNewGarages] = useState<Geoloc[]>([]);
     const defaultCenter: [number, number] = [48.866667, 2.333333];
@@ -22,7 +21,7 @@ const MapGarage = ({garages, services, radius, switchCoordinate, userPosition }:
         userPosition ??
         (garages.length > 0 ? [garages[0].latitude, garages[0].longitude] : defaultCenter);
 
-    const [mapCenter, setMapCenter] = useState<[number, number]>(initialCenter);
+    const [mapCenter] = useState<[number, number]>(initialCenter);
 
 
     const RecenterMap = () => {
@@ -57,7 +56,7 @@ const MapGarage = ({garages, services, radius, switchCoordinate, userPosition }:
                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
                 />
 
-                <RecenterMap coord={switchCoordinate ?? null}/>
+                <RecenterMap/>
 
                 {(newGarage.length > 0 ? newGarage : garages).map((garage) => (
                     <Marker

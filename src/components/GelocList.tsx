@@ -10,8 +10,6 @@ type GelocListProps = {
     onServices?: (services: number[]) => void
 };
 const GelocList = ({searchQuery, radiusKm, onResult, onServices}: GelocListProps) => {
-    const [items, setItems] = useState<Geoloc[]>([]);
-    const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [services, setServices] = useState<number[]>([]);
 
@@ -33,7 +31,7 @@ const GelocList = ({searchQuery, radiusKm, onResult, onServices}: GelocListProps
     }, []);
 
     useEffect(() => {
-        if (!searchQuery) return; // on sort si rien à chercher
+        if (!searchQuery) return;
         setError(null);
 
 

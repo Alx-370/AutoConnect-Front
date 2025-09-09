@@ -1,5 +1,5 @@
-import {Card, CardContent, Typography, Box, Avatar, Button} from "@mui/material";
-import StoreIcon from "@mui/icons-material/Store"; // l'icône boutique
+import {Card, CardContent, Typography, Avatar, Button} from "@mui/material";
+import StoreIcon from "@mui/icons-material/Store";
 
 import type {Geoloc} from "../types/geoloc";
 import {useState} from "react";
@@ -14,7 +14,7 @@ interface CardGeolocGarageProps {
 }
 
 const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarageProps) => {
-    const[show , setShow] = useState(false);
+
     const navigate = useNavigate();
     const handleCardClick = () => {
         onResult?.([geoloc.latitude, geoloc.longitude]);
