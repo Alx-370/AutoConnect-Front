@@ -4,6 +4,7 @@ import StoreIcon from "@mui/icons-material/Store"; // l'icône boutique
 import type {Geoloc} from "../types/geoloc";
 import {useState} from "react";
 import {useNavigate} from "react-router";
+import type {QuoteLS} from "../types/quote.ts";
 
 interface CardGeolocGarageProps {
     geoloc: Geoloc;
@@ -17,20 +18,38 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
     const navigate = useNavigate();
     const handleCardClick = () => {
         onResult?.([geoloc.latitude, geoloc.longitude]);
-        onSelect(geoloc.id); // dit au parent : "c’est moi le sélectionné"
+        onSelect(geoloc.id);
     };
 
 
-    const handleSave = () => {
-        console.log("handleSave appelé");
-        const stored = localStorage.getItem("ac.selection");
-        let existing = stored ? JSON.parse(stored) : [];
+    const readLS = (): QuoteLS => {
+        const raw = localStorage.getItem("ac.selection");
+        if (!raw) return {};
+        try {
+            const parsed = JSON.parse(raw) as QuoteLS;
+            const year = parsed.year
 
-        if (!Array.isArray(existing)) {
-            existing = [];
+            const services = parsed.services
+            return {
+                immat: parsed.immat ?? undefined,
+                km: parsed.km ?? undefined,
+                make: parsed.make ?? null,
+                model: parsed.model ?? null,
+                year,
+                services,
+            };
+        } catch {
+            return {};
         }
+    };
+    const [data] = useState<QuoteLS>(() => readLS());
+
+    const handleSave = () => {
+
+        console.log("handleSave appelé");
 
         const newGarage = {
+            ...data,
             id: geoloc.id,
             name: geoloc.name,
             typeVoie: geoloc.typeVoie,
@@ -40,11 +59,7 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
             phoneNumber: geoloc.phoneNumber,
         };
 
-        const updated = [...existing, newGarage];
-
-        localStorage.setItem("ac.selection", JSON.stringify(updated));
-
-        console.log("saved:", updated);
+        localStorage.setItem("ac.selection", JSON.stringify(newGarage));
         navigate(`/search-appointment-garage`);
     };
 
