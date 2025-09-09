@@ -117,7 +117,7 @@ const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
             appointment: effectiveAppt
         };
         localStorage.setItem(LS_KEY, JSON.stringify(payload));
-        // TODO: navigate("/confirmation")
+        // mettre un navigate pour le log
     };
 
     return (
@@ -256,8 +256,14 @@ const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
                                             >
                                                 <ListItemText
                                                     primary={primary}
-                                                    primaryTypographyProps={{ variant: "body2", sx: { fontSize: 14 } }}
+                                                    slotProps={{
+                                                        primary: {
+                                                            variant: "body2",
+                                                            sx: { fontSize: 14 },
+                                                        },
+                                                    }}
                                                 />
+
                                             </ListItem>
                                         );
                                     })}
@@ -267,7 +273,7 @@ const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
 
                         <Divider sx={{ my: 2 }} />
 
-                        {/* Σ Totaux */}
+                        {/* Totaux */}
                         <Stack gap={0.5} sx={{ ml: "auto", maxWidth: 360 }}>
                             <Row label="Total HT" value={fmt.format(totalHT)} />
                             <Row label="TVA (20%)" value={fmt.format(tva)} />
