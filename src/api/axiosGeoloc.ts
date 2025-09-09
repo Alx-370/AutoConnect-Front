@@ -1,7 +1,6 @@
 import axios from "axios";
 
 import type {Geoloc} from "../types/geoloc.ts";
-import type {YearDto} from "../types/car.ts";
 
 
 
