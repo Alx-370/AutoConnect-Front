@@ -6,24 +6,26 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PrintIcon from "@mui/icons-material/Print";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import type { QuoteLS, ServiceItem } from "../types/quote";
+import type { Slot } from "./BookingCalendar";
 
-
-
-const SERVICE_CATALOG: Record<number, ServiceItem> = {
-    1:  { id: 1,  name: "Vidange + Filtre à Huile",     price: 89 },
-    2:  { id: 2,  name: "Pneumatiques",                  price: 90 },
-    3:  { id: 3,  name: "Freins",                        price: 140 },
-    4:  { id: 4,  name: "Batterie",                      price: 120 },
-    5:  { id: 5,  name: "Distribution",                  price: 650 },
-    6:  { id: 6,  name: "Amortisseurs",                  price: 320 },
-    7:  { id: 7,  name: "Climatisation",                 price: 89 },
-    8:  { id: 8,  name: "Diagnostic électronique",       price: 49 },
-    9:  { id: 9,  name: "Géométrie / Parallélisme",      price: 79 },
-    10: { id: 10, name: "Filtres air & habitacle",       price: 49 },
-    11: { id: 11, name: "Bougies / Préchauffage",        price: 89 },
-    12: { id: 12, name: "Embrayage",                     price: 690 },
+type QuoteCardProps = {
+    selectedSlot: Slot | null;
 };
 
+const SERVICE_CATALOG: Record<number, ServiceItem> = {
+    1:{id:1,name:"Vidange + Filtre à Huile",price:89},
+    2:{id:2,name:"Pneumatiques",price:90},
+    3:{id:3,name:"Freins",price:140},
+    4:{id:4,name:"Batterie",price:120},
+    5:{id:5,name:"Distribution",price:650},
+    6:{id:6,name:"Amortisseurs",price:320},
+    7:{id:7,name:"Climatisation",price:89},
+    8:{id:8,name:"Diagnostic électronique",price:49},
+    9:{id:9,name:"Géométrie / Parallélisme",price:79},
+    10:{id:10,name:"Filtres air & habitacle",price:49},
+    11:{id:11,name:"Bougies / Préchauffage",price:89},
+    12:{id:12,name:"Embrayage",price:690},
+};
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const fmt = new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR" });
@@ -34,7 +36,6 @@ const readLS = (): QuoteLS => {
     if (!raw) return {};
     try {
         const parsed = JSON.parse(raw) as QuoteLS;
-
         const year =
             parsed.year === null || parsed.year === undefined || parsed.year === ""
                 ? null
@@ -63,7 +64,7 @@ const readLS = (): QuoteLS => {
 const computeTotalHT = (serviceIds: number[]) =>
     serviceIds.reduce((sum, id) => sum + (SERVICE_CATALOG[id]?.price ?? 0), 0);
 
-const QuoteCard = () => {
+const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
     const [data] = useState<QuoteLS>(() => readLS());
 
     const servicesIds = useMemo<number[]>(
@@ -82,10 +83,12 @@ const QuoteCard = () => {
 
     const quoteNumber = useMemo(() => {
         const d = new Date();
-        return `DV-${d.getFullYear()}${String(d.getMonth() + 1).padStart(2, "0")}${String(d.getDate()).padStart(2, "0")}-${String(d.getHours()).padStart(2, "0")}${String(d.getMinutes()).padStart(2, "0")}`;
+        return `DV-${d.getFullYear()}${String(d.getMonth()+1).padStart(2,"0")}${String(d.getDate()).padStart(2,"0")}-${String(d.getHours()).padStart(2,"0")}${String(d.getMinutes()).padStart(2,"0")}`;
     }, []);
 
     const handleValidate = () => {
+        if (!selectedSlot) return;
+
         const payload = {
             ...data,
             totalHT,
@@ -93,14 +96,14 @@ const QuoteCard = () => {
             totalTTC,
             quoteNumber,
             validatedAt: new Date().toISOString(),
+            appointment: selectedSlot,
         };
-        localStorage.setItem("ac.selection", JSON.stringify(payload));
-
+        localStorage.setItem(LS_KEY, JSON.stringify(payload));
+        // mettre le use navigate
     };
 
     return (
         <>
-            {/* Impression */}
             <GlobalStyles styles={{
                 "@media print": {
                     "body *": { visibility: "hidden" },
@@ -109,10 +112,7 @@ const QuoteCard = () => {
                     ".MuiCard-root": { boxShadow: "none", border: "1px solid #ddd" },
                     ".no-print": { display: "none !important" }
                 },
-                "@page": {
-                    margin: "12mm",
-                    size: "A4",
-                }
+                "@page": { margin: "12mm", size: "A4" }
             }} />
 
             <div id="print-quote">
@@ -142,6 +142,9 @@ const QuoteCard = () => {
                                 {data.model && <Chip label={`Modèle: ${data.model}`} />}
                                 {data.year != null && data.year !== "" && <Chip label={`Année: ${data.year}`} />}
                                 {data.km && <Chip label={`Kilométrage: ${data.km} km`} />}
+                                {selectedSlot && (
+                                    <Chip label={`RDV: ${new Date(selectedSlot.start).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" })}`} color="success" />
+                                )}
                             </Box>
                         </Stack>
 
@@ -165,15 +168,8 @@ const QuoteCard = () => {
                                         const primary = item?.name ?? `Service #${id}`;
                                         const price = item?.price ?? 0;
                                         return (
-                                            <ListItem
-                                                key={id}
-                                                secondaryAction={<Typography fontWeight={600}>{fmt.format(price)}</Typography>}
-                                                sx={{ py: 0.75 }}
-                                            >
-                                                <ListItemText
-                                                    primary={primary}
-                                                    slotProps={{ primary: { variant: "body2", sx: { fontSize: 14 } } }}
-                                                />
+                                            <ListItem key={id} secondaryAction={<Typography fontWeight={600}>{fmt.format(price)}</Typography>} sx={{ py: 0.75 }}>
+                                                <ListItemText primary={primary} slotProps={{ primary: { variant: "body2", sx: { fontSize: 14 } } }} />
                                             </ListItem>
                                         );
                                     })}
@@ -195,7 +191,14 @@ const QuoteCard = () => {
                             <Button variant="contained" startIcon={<PrintIcon />} onClick={() => window.print()} sx={{ textTransform: "none" }}>
                                 Imprimer / PDF
                             </Button>
-                            <Button variant="contained" color="success" startIcon={<CheckCircleIcon />} onClick={handleValidate} sx={{ textTransform: "none" }}>
+                            <Button
+                                variant="contained"
+                                color="success"
+                                startIcon={<CheckCircleIcon />}
+                                onClick={handleValidate}
+                                disabled={!selectedSlot}
+                                sx={{ textTransform: "none" }}
+                            >
                                 Valider
                             </Button>
                         </Stack>
