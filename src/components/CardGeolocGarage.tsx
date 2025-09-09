@@ -19,6 +19,35 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
         onResult?.([geoloc.latitude, geoloc.longitude]);
         onSelect(geoloc.id); // dit au parent : "c’est moi le sélectionné"
     };
+
+
+    const handleSave = () => {
+        console.log("handleSave appelé");
+        const stored = localStorage.getItem("ac.selection");
+        let existing = stored ? JSON.parse(stored) : [];
+
+        if (!Array.isArray(existing)) {
+            existing = [];
+        }
+
+        const newGarage = {
+            id: geoloc.id,
+            name: geoloc.name,
+            typeVoie: geoloc.typeVoie,
+            libelleVoie: geoloc.libelleVoie,
+            codePostal: geoloc.codePostal,
+            libelleCommune: geoloc.libelleCommune,
+            phoneNumber: geoloc.phoneNumber,
+        };
+
+        const updated = [...existing, newGarage];
+
+        localStorage.setItem("ac.selection", JSON.stringify(updated));
+
+        console.log("saved:", updated);
+        navigate(`/search-appointment-garage`);
+    };
+
     return (
         <Card
             sx={{
@@ -49,6 +78,7 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
                     {geoloc.typeVoie} {geoloc.libelleVoie}, {geoloc.codePostal}{" "}
                     {geoloc.libelleCommune}
                 </Typography>
+                <Typography> {geoloc.phoneNumber}</Typography>
                 {isOpen && (
                     <Button
                         variant="contained"
@@ -56,7 +86,7 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
                         sx={{mt: 2}}
                         onClick={(e) => {
                             e.stopPropagation();
-                            navigate(`/search-appointment-garage`);
+                            handleSave();
                         }}
                     >
                         Prendre rendez-vous
