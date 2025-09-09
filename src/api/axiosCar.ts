@@ -1,13 +1,23 @@
 import axios from "axios";
 import type { MakeDto, ModelDto, YearDto } from "../types/car";
 
-const BASE = "http://localhost:8080";
+const API_BASE = "http://localhost:8080";
 
-export const fetchMakes = () =>
-    axios.get<MakeDto[]>(`${BASE}/api/car/mark`).then(r => r.data);
+export async function fetchMakes(): Promise<MakeDto[]> {
+    const { data } = await axios.get<MakeDto[]>(`${API_BASE}/api/car/mark`);
+    return data;
+}
 
-export const fetchModels = (make: string) =>
-    axios.get<ModelDto[]>(`${BASE}/api/car/model`, { params: { make } }).then(r => r.data);
+export async function fetchModels(make: string): Promise<ModelDto[]> {
+    const { data } = await axios.get<ModelDto[]>(`${API_BASE}/api/car/model`, {
+        params: { make },
+    });
+    return data;
+}
 
-export const fetchYears = (make: string, model: string) =>
-    axios.get<YearDto[]>(`${BASE}/api/car/year`, { params: { make, model } }).then(r => r.data);
+export async function fetchYears(make: string, model: string): Promise<YearDto[]> {
+    const { data } = await axios.get<YearDto[]>(`${API_BASE}/api/car/year`, {
+        params: { make, model },
+    });
+    return data;
+}
