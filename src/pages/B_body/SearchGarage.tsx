@@ -13,6 +13,7 @@ import GarageIcon from "@mui/icons-material/Garage";
 import type { Geoloc } from "../../types/geoloc";
 import CardGeolocGarage from "../../components/CardGeolocGarage";
 import { axiosGeolocWithGPS } from "../../api/axiosGeoloc";
+import HeroTitle from "../../components/HeroTitle.tsx";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 
@@ -60,7 +61,13 @@ const SearchGarage = () => {
     return (
         <>
             <Header />
-            <BookingSteps activeStep={1} />
+            <Box sx={{display: "flex", flexDirection: "column", alignItems: "center" }}>
+                <HeroTitle
+                    title="AutoConnect"
+                    sx={{ mt: 3 }}
+                />
+                <BookingSteps activeStep={1} />
+            </Box>
 
             <Card
                 sx={{

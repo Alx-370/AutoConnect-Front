@@ -25,7 +25,7 @@ type Props = {
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 
 
-const SLOT_FMT = "YYYY-MM-DD[T]HH:mm";
+const SLOT_FMT = "YYYY-MM-DD HH:mm";
 
 const BookingCalendar = ({
                              onPick = () => {},
