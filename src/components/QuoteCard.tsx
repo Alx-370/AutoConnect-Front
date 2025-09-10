@@ -8,6 +8,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import StorefrontIcon from "@mui/icons-material/Storefront";
 import type { QuoteLS, ServiceItem } from "../types/quote";
 import type { Slot } from "./BookingCalendar";
+import { useNavigate } from "react-router";
 
 type QuoteCardProps = {
     selectedSlot: Slot | null;
@@ -76,6 +77,7 @@ const computeTotalHT = (serviceIds: number[]) =>
     serviceIds.reduce((sum, id) => sum + (SERVICE_CATALOG[id]?.price ?? 0), 0);
 
 const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
+    const navigate = useNavigate();
     const [data] = useState<QuoteLS>(() => readLS());
 
 
@@ -117,7 +119,7 @@ const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
             appointment: effectiveAppt
         };
         localStorage.setItem(LS_KEY, JSON.stringify(payload));
-        // mettre un navigate pour le log
+        navigate("/login-user");
     };
 
     return (

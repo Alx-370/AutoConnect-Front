@@ -1,11 +1,12 @@
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
-import {Box, Button, Typography} from "@mui/material";
+import {Box, Button} from "@mui/material";
 import CarSearch from "../../components/CarSearch";
 import PrestationListContainer from "../../components/PrestationListContainer";
 import BookingSteps from "../../components/BookingSteps";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
+import HeroTitle from "../../components/HeroTitle.tsx";
 
 
 const Dashboard = () => {
@@ -63,10 +64,11 @@ const Dashboard = () => {
     return (
         <>
             <Header />
-            <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <Typography variant="h4" sx={{ fontWeight: 700,padding: 5, marginTop: 1, display: "flex", justifyContent: "center" }}>
-                    AutoConnect
-                </Typography>
+            <Box sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <HeroTitle
+                title="AutoConnect"
+                sx={{ mt: 3 }}
+            />
 
                 <p style={{ padding: 16, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     La tranquillité commence ici : comparez les meilleurs garages de votre région et optez
