@@ -1,6 +1,7 @@
 import { useState } from "react";
-import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment} from "@mui/material";
+import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment, Link} from "@mui/material";
 import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
+import { Link as RouterLink } from "react-router";
 import axios from "axios";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
@@ -28,23 +29,16 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
         setError(null);
         setLoading(true);
         try {
-
             const token = window.btoa(`${email}:${password}`);
             await axios.get(`${API_BASE}/auth/login`, {
                 headers: { Authorization: `Basic ${token}` },
             });
-
-            // Persistance simple (facultatif)
             localStorage.setItem("ac.auth", token);
             axios.defaults.headers.common["Authorization"] = `Basic ${token}`;
-
             onSuccess?.();
         } catch (err: unknown) {
-            const unauthorized =
-                (axios.isAxiosError(err) && err.response?.status === 401) ?? false;
-            const msg = unauthorized
-                ? "Identifiants incorrects."
-                : "Connexion impossible. Réessaie.";
+            const unauthorized = (axios.isAxiosError(err) && err.response?.status === 401) ?? false;
+            const msg = unauthorized ? "Identifiants incorrects." : "Connexion impossible. Réessaie.";
             setError(msg);
         } finally {
             setLoading(false);
@@ -60,11 +54,8 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                 await loginFn(email, password);
                 onSuccess?.();
             } catch (err: unknown) {
-                const unauthorized =
-                    (axios.isAxiosError(err) && err.response?.status === 401) ?? false;
-                const msg = unauthorized
-                    ? "Identifiants incorrects."
-                    : "Connexion impossible. Réessaie.";
+                const unauthorized = (axios.isAxiosError(err) && err.response?.status === 401) ?? false;
+                const msg = unauthorized ? "Identifiants incorrects." : "Connexion impossible. Réessaie.";
                 setError(msg);
             } finally {
                 setLoading(false);
@@ -145,6 +136,14 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                         >
                             {loading ? "Connexion..." : "Se connecter"}
                         </Button>
+
+                        {/* 🔗 Lien vers l'inscription */}
+                        <Typography variant="body2" sx={{ textAlign: "center", opacity: 0.85 }}>
+                            Pas de compte ?{" "}
+                            <Link component={RouterLink} to="/user-register" underline="hover">
+                                Créer un compte
+                            </Link>
+                        </Typography>
                     </Stack>
                 </form>
             </CardContent>
