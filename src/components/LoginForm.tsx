@@ -1,12 +1,13 @@
-import { useState } from "react";
-import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment, Link} from "@mui/material";
+import {useEffect, useState} from "react";
+import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, IconButton, InputAdornment, Link} from "@mui/material";
 import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router";
-import axios from "axios";
+import {fetchLog} from "../api/axiosLog.ts";
+import type {Login} from "../types/login.ts";
+import type {QuoteLS} from "../types/quote.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-const API_BASE = "http://localhost:8080";
 
 type LoginFormProps = {
     onSuccess?: () => void;
@@ -18,52 +19,44 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
     const [password, setPassword] = useState("");
     const [showPwd, setShowPwd] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
+    const [isLoggedIn, setIsLoggedIn] = useState(false);
+    const [data, setData] = useState <Login>();
 
     const canSubmit = emailRegex.test(email) && password.length >= 4 && !loading;
 
-    async function defaultLogin(e: React.FormEvent<HTMLFormElement>) {
+    const handleSubmit = async (e : any): Promise<void> => {
         e.preventDefault();
-        if (!canSubmit) return;
+        console.log("password", password);
+        fetchLog (email, password)
+                .then(res =>{
+                    setIsLoggedIn(true);
+                    setData(res);
+                    console.log(res)
 
-        setError(null);
-        setLoading(true);
+                });
+    }
+//////////////////////////////////////////////////////////////////
+    useEffect(() => {
+        const raw = localStorage.getItem("ac.selection");
+        if (!raw) return {};
         try {
-            const token = window.btoa(`${email}:${password}`);
-            await axios.get(`${API_BASE}/auth/login`, {
-                headers: { Authorization: `Basic ${token}` },
-            });
-            localStorage.setItem("ac.auth", token);
-            axios.defaults.headers.common["Authorization"] = `Basic ${token}`;
-            onSuccess?.();
-        } catch (err: unknown) {
-            const unauthorized = (axios.isAxiosError(err) && err.response?.status === 401) ?? false;
-            const msg = unauthorized ? "Identifiants incorrects." : "Connexion impossible. Réessaie.";
-            setError(msg);
-        } finally {
-            setLoading(false);
+            const parsed = JSON.parse(raw) as QuoteLS;
+            const id = parsed.id
+            const year = parsed.year
+            const services = parsed.services
+            return {
+                immat: parsed.immat ?? undefined,
+                km: parsed.km ?? undefined,
+                make: parsed.make ?? null,
+                model: parsed.model ?? null,
+                year,
+                services,
+            };
+        } catch {
+            return {};
         }
-    }
-
-    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
-        if (loginFn) {
-            e.preventDefault();
-            setError(null);
-            setLoading(true);
-            try {
-                await loginFn(email, password);
-                onSuccess?.();
-            } catch (err: unknown) {
-                const unauthorized = (axios.isAxiosError(err) && err.response?.status === 401) ?? false;
-                const msg = unauthorized ? "Identifiants incorrects." : "Connexion impossible. Réessaie.";
-                setError(msg);
-            } finally {
-                setLoading(false);
-            }
-        } else {
-            await defaultLogin(e);
-        }
-    }
+    },[isLoggedIn])
+///////////////////////////////////////////////////////////////////////////////////////
 
     return (
         <Card
@@ -89,7 +82,6 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
             <CardContent sx={{ p: 3 }}>
                 <form onSubmit={handleSubmit} noValidate>
                     <Stack spacing={2}>
-                        {error && <Alert severity="error">{error}</Alert>}
 
                         <TextField
                             label="Email"
