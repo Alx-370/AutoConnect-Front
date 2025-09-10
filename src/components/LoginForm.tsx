@@ -137,7 +137,6 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                             {loading ? "Connexion..." : "Se connecter"}
                         </Button>
 
-                        {/* 🔗 Lien vers l'inscription */}
                         <Typography variant="body2" sx={{ textAlign: "center", opacity: 0.85 }}>
                             Pas de compte ?{" "}
                             <Link component={RouterLink} to="/user-register" underline="hover">
