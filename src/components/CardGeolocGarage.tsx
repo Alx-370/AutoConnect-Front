@@ -56,7 +56,7 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
             libelleVoie: geoloc.libelleVoie,
             codePostal: geoloc.codePostal,
             libelleCommune: geoloc.libelleCommune,
-            phoneNumber: geoloc.phoneNumber,
+            phone: geoloc.phone,
         };
 
         localStorage.setItem("ac.selection", JSON.stringify(newGarage));
@@ -93,7 +93,7 @@ const CardGeolocGarage = ({geoloc, onResult, isOpen, onSelect}: CardGeolocGarage
                     {geoloc.typeVoie} {geoloc.libelleVoie}, {geoloc.codePostal}{" "}
                     {geoloc.libelleCommune}
                 </Typography>
-                <Typography> {geoloc.phoneNumber}</Typography>
+                <Typography> {geoloc.phone}</Typography>
                 {isOpen && (
                     <Button
                         variant="contained"
