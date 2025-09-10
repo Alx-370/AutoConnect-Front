@@ -16,7 +16,7 @@ export type QuoteLS = {
     libelleVoie?: string;
     codePostal?: string;
     libelleCommune?: string;
-    phoneNumber?: string;
+    phone?: string;
     appointment?: { start: string; end: string };
     totalHT?: number;
     tva?: number;

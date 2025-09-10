@@ -64,7 +64,7 @@ const readLS = (): QuoteLS => {
             libelleVoie: parsed.libelleVoie,
             codePostal: parsed.codePostal,
             libelleCommune: parsed.libelleCommune,
-            phoneNumber: parsed.phoneNumber,
+            phone: parsed.phone,
             appointment: parsed.appointment
         };
     } catch {
@@ -191,7 +191,7 @@ const QuoteCard = ({ selectedSlot }: QuoteCardProps) => {
                                     <Chip label={data.name} />
                                     {data.libelleCommune && <Chip label={data.libelleCommune} />}
                                     {data.codePostal && <Chip label={data.codePostal} />}
-                                    {data.phoneNumber && <Chip label={data.phoneNumber} />}
+                                    {data.phone && <Chip label={data.phone} />}
                                 </Box>
                             ) : (
                                 <Typography variant="body2" sx={{ opacity: 0.8 }}>
