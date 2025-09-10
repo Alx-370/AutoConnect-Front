@@ -6,9 +6,11 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { DateCalendar } from "@mui/x-date-pickers/DateCalendar";
 import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import dayjs, { Dayjs } from "dayjs";
+import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/fr";
 
 dayjs.locale("fr");
+dayjs.extend(customParseFormat);
 
 export type Slot = { start: string; end: string };
 
@@ -21,6 +23,9 @@ type Props = {
 };
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
+
+
+const SLOT_FMT = "YYYY-MM-DD[T]HH:mm";
 
 const BookingCalendar = ({
                              onPick = () => {},
@@ -35,6 +40,16 @@ const BookingCalendar = ({
     const theme = useTheme();
     const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
+
+    const toLocalIso = (d: dayjs.Dayjs) =>
+        d.second(0).millisecond(0).format(SLOT_FMT);
+
+
+    const disabledTimesNormalized = useMemo(
+        () => (disabledTimes ?? []).map(v => dayjs(v).format(SLOT_FMT)),
+        [disabledTimes]
+    );
+
     const slots = useMemo(() => {
         if (!date) return [];
         const d = date.startOf("day");
@@ -43,14 +58,16 @@ const BookingCalendar = ({
             for (let m = 0; m < 60; m += stepMin) {
                 const start = d.hour(h).minute(m);
                 const end = start.add(stepMin, "minute");
-                out.push({ start: start.toISOString(), end: end.toISOString() });
+                out.push({ start: toLocalIso(start), end: toLocalIso(end) });
             }
         }
         return out;
     }, [date, startHour, endHour, stepMin]);
 
-    const isDisabled = (isoStart: string) =>
-        disabledTimes.includes(isoStart) || dayjs(isoStart).isBefore(dayjs());
+
+    const isDisabled = (startLocal: string) =>
+        disabledTimesNormalized.includes(startLocal) ||
+        dayjs(startLocal, SLOT_FMT, true).isBefore(dayjs().second(0).millisecond(0));
 
     const subtitle = date
         ? date.format("dddd D MMMM YYYY").replace(/^\w/, (c) => c.toUpperCase())
@@ -58,10 +75,7 @@ const BookingCalendar = ({
 
     return (
         <>
-            <GlobalStyles styles={{
-                "@media print": { "#print-calendar": { display: "none !important" } },
-            }} />
-
+            <GlobalStyles styles={{ "@media print": { "#print-calendar": { display: "none !important" } }}} />
             <div id="print-calendar">
                 <Card
                     sx={{
@@ -87,20 +101,12 @@ const BookingCalendar = ({
 
                     <CardContent sx={{ p: { xs: 2, sm: 3 } }}>
                         <Stack spacing={2} alignItems="center">
-                            <Box
-                                sx={{
-                                    width: "100%",
-                                    overflowX: { xs: "auto", sm: "visible" },
-                                    display: "flex",
-                                    justifyContent: "center",
-                                }}
-                            >
+                            <Box sx={{ width: "100%", overflowX: { xs: "auto", sm: "visible" }, display: "flex", justifyContent: "center" }}>
                                 <LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="fr">
                                     <DateCalendar
                                         value={date}
                                         onChange={(d) => { setDate(d); setSelectedStart(null); }}
                                         sx={{
-
                                             "& .MuiPickersSlideTransition-root": { minHeight: { xs: 280, sm: 320 } },
                                             "& .MuiDayCalendar-header, & .MuiDayCalendar-weekDayLabel": { mx: { xs: 0.5, sm: 1 } },
                                         }}
@@ -117,16 +123,12 @@ const BookingCalendar = ({
                                     width: "100%",
                                     maxWidth: { xs: 520, sm: 680 },
                                     display: "grid",
-                                    gridTemplateColumns: {
-                                        xs: "repeat(2, 1fr)",
-                                        sm: "repeat(3, 1fr)",
-                                        md: "repeat(4, 1fr)",
-                                    },
+                                    gridTemplateColumns: { xs: "repeat(2, 1fr)", sm: "repeat(3, 1fr)", md: "repeat(4, 1fr)" },
                                     gap: { xs: 1, sm: 1.25 },
                                 }}
                             >
                                 {slots.map((s) => {
-                                    const start = dayjs(s.start);
+                                    const start = dayjs(s.start, SLOT_FMT, true);
                                     const label = start.format("HH:mm");
                                     const disabled = isDisabled(s.start);
                                     const selected = selectedStart === s.start;
@@ -137,10 +139,7 @@ const BookingCalendar = ({
                                             disabled={disabled}
                                             onClick={() => { setSelectedStart(s.start); onPick(s); }}
                                             size={isXs ? "small" : "medium"}
-                                            sx={{
-                                                textTransform: "none",
-                                                minHeight: 40,
-                                            }}
+                                            sx={{ textTransform: "none", minHeight: 40 }}
                                         >
                                             {label}
                                         </Button>
