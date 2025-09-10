@@ -139,7 +139,7 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
 
                         <Typography variant="body2" sx={{ textAlign: "center", opacity: 0.85 }}>
                             Pas de compte ?{" "}
-                            <Link component={RouterLink} to="/user-register" underline="hover">
+                            <Link component={RouterLink} to="/register-user" underline="hover">
                                 Créer un compte
                             </Link>
                         </Typography>
