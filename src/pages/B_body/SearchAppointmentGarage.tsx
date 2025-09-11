@@ -1,4 +1,4 @@
-import { useState } from "react";
+import {useEffect, useState} from "react";
 import Header from "../A_header/Header.tsx";
 import Footer from "../C_footer/Footer.tsx";
 import BookingSteps from "../../components/BookingSteps.tsx";
@@ -7,10 +7,65 @@ import QuoteCard from "../../components/QuoteCard.tsx";
 import BookingCalendar from "../../components/BookingCalendar.tsx";
 import type { Slot } from "../../components/BookingCalendar.tsx";
 import HeroTitle from "../../components/HeroTitle.tsx";
-
+import {fetchCalandar} from "../../api/axiosCalandar.ts";
+import type {ApointmentDto} from "../../types/ApointmentDto.ts";
 
 const SearchAppointmentGarage = () => {
     const [slot, setSlot] = useState<Slot | null>(null);
+    const[ garageId, setGarageId] = useState<number | null>(null);
+    const [data, setData] = useState<ApointmentDto>();
+
+    const getGarageHoursForDate = (garageOpeningHours: any , date: any) => {
+        const daysMap: Record<string, string> = {
+            lundi: "MONDAY",
+            mardi: "TUESDAY",
+            mercredi: "WEDNESDAY",
+            jeudi: "THURSDAY",
+            vendredi: "FRIDAY",
+            samedi: "SATURDAY",
+            dimanche: "SUNDAY",
+        };
+        if (!garageOpeningHours || !date) return null;
+        const dayOfWeekFr = date.format("dddd").toLowerCase(); // "lundi", "mardi", etc.
+        const dayOfWeek = daysMap[dayOfWeekFr];
+        const dayConfig = garageOpeningHours.find(d => d.dayOfWeek === dayOfWeek);
+
+        if (!dayConfig) return null; // garage fermé
+
+        const openingHour = parseInt(dayConfig.openingHour.split(":")[0], 10);
+        const closingHour = parseInt(dayConfig.closingHour.split(":")[0], 10);
+
+        return {openingHour, closingHour};
+    };
+
+
+    useEffect(() => {
+        const saved = localStorage.getItem("ac.selection");
+        if (saved) {
+            try {
+                const parsed = JSON.parse(saved);
+                if (parsed.id) {
+                    setGarageId(parsed.id);
+                    console.log(parsed.id);
+                }
+            } catch (e) {
+                console.error("Impossible de parser le localStorage", e);
+            }
+        }
+    }, []);
+
+    useEffect(() => {
+        if (garageId !== null) {
+            console.log("Garage ID:", garageId);
+            fetchCalandar(garageId).then(
+                (res) => {
+                    console.log(res);
+                    setData(res);
+                }
+            );
+        }
+    }, [garageId]);
+
 
     return (
         <>
@@ -34,7 +89,13 @@ const SearchAppointmentGarage = () => {
                 }}
             >
                 <QuoteCard selectedSlot={slot} />
-                <BookingCalendar onPick={setSlot} />
+                {data && (
+                    <BookingCalendar
+                        onPick={setSlot}
+                        disabledTimes={data.appointment}
+                        getHoursForDate={(date) => getGarageHoursForDate(data?.garageOpeningHours, date)}
+                    />
+                )}
             </Box>
 
 

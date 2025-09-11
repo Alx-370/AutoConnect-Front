@@ -8,6 +8,7 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import dayjs, { Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/fr";
+import type {Appointment} from "../types/ApointmentDto.ts";
 
 dayjs.locale("fr");
 dayjs.extend(customParseFormat);
@@ -19,21 +20,16 @@ type Props = {
     startHour?: number;
     endHour?: number;
     stepMin?: number;
-    disabledTimes?: string[];
-};
+    disabledTimes?: Appointment[];
+    getHoursForDate?: (date: Dayjs) => { openingHour: number; closingHour: number } | null;};
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 
 
 const SLOT_FMT = "YYYY-MM-DD HH:mm";
 
-const BookingCalendar = ({
-                             onPick = () => {},
-                             startHour = 9,
-                             endHour = 18,
-                             stepMin = 30,
-                             disabledTimes = [],
-                         }: Props) => {
+const BookingCalendar = ({onPick = () => {} , stepMin = 30,
+                             getHoursForDate, disabledTimes = [],}: Props) => {
     const [date, setDate] = useState<Dayjs | null>(dayjs());
     const [selectedStart, setSelectedStart] = useState<string | null>(null);
 
@@ -45,24 +41,45 @@ const BookingCalendar = ({
         d.second(0).millisecond(0).format(SLOT_FMT);
 
 
-    const disabledTimesNormalized = useMemo(
-        () => (disabledTimes ?? []).map(v => dayjs(v).format(SLOT_FMT)),
-        [disabledTimes]
-    );
+    const disabledTimesNormalized = useMemo(() => {
+        if (!disabledTimes) return [];
+
+        const out: string[] = [];
+
+        disabledTimes.forEach(appt => {
+            const start = dayjs(appt.startDate);
+            const end = dayjs(appt.endDate);
+
+            let current = start;
+
+            while (current.isBefore(end)) {
+                out.push(current.format(SLOT_FMT));
+                current = current.add(stepMin, "minute");
+            }
+        });
+
+        return out;
+    }, [disabledTimes, stepMin]);
+
+
+    const hours = date && getHoursForDate ? getHoursForDate(date) : null;
 
     const slots = useMemo(() => {
-        if (!date) return [];
-        const d = date.startOf("day");
+        if (!date || !hours) return []; // Pas d'heures = pas de créneaux
+
         const out: Slot[] = [];
-        for (let h = startHour; h < endHour; h++) {
+        const d = date.startOf("day");
+
+        for (let h = hours.openingHour; h < hours.closingHour; h++) {
             for (let m = 0; m < 60; m += stepMin) {
                 const start = d.hour(h).minute(m);
                 const end = start.add(stepMin, "minute");
-                out.push({ start: toLocalIso(start), end: toLocalIso(end) });
+                out.push({start: toLocalIso(start), end: toLocalIso(end)});
             }
         }
+
         return out;
-    }, [date, startHour, endHour, stepMin]);
+    }, [date, hours, stepMin]);
 
 
     const isDisabled = (startLocal: string) =>
