@@ -7,7 +7,7 @@ import QuoteCard from "../../components/QuoteCard.tsx";
 import BookingCalendar from "../../components/BookingCalendar.tsx";
 import type { Slot } from "../../components/BookingCalendar.tsx";
 import HeroTitle from "../../components/HeroTitle.tsx";
-import {fetchCalandar} from "../../api/axiosCalandar.ts";
+import {fetchCalendar} from "../../api/axiosCalendar.ts";
 import type {ApointmentDto} from "../../types/ApointmentDto.ts";
 
 const SearchAppointmentGarage = () => {
@@ -57,7 +57,7 @@ const SearchAppointmentGarage = () => {
     useEffect(() => {
         if (garageId !== null) {
             console.log("Garage ID:", garageId);
-            fetchCalandar(garageId).then(
+            fetchCalendar(garageId).then(
                 (res) => {
                     console.log(res);
                     setData(res);
