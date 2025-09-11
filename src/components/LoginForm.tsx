@@ -1,62 +1,113 @@
 import {useEffect, useState} from "react";
-import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, IconButton, InputAdornment, Link} from "@mui/material";
+import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment, Link} from "@mui/material";
 import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router";
-import {fetchLog} from "../api/axiosLog.ts";
-import type {Login} from "../types/login.ts";
-import type {QuoteLS} from "../types/quote.ts";
+import axios from "axios";
+import {fetchLog, postAppointment} from "../api/axiosLog";
+import type { QuoteLS } from "../types/quote";
+import type {Login, LoginFormState} from "../types/login.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+// Utilise un proxy Vite en dev pour éviter CORS
+const API_BASE = "/api";
+const SELECTION_LS_KEY = "ac.selection";
+const DEST_ENDPOINT = `${API_BASE}/appointements`;
 
 type LoginFormProps = {
     onSuccess?: () => void;
     loginFn?: (email: string, password: string) => Promise<void>;
 };
 
+
+// Conversion "YYYY-MM-DD HH:mm" ou "YYYY-MM-DDTHH:mm" -> ISO UTC "YYYY-MM-DDTHH:mm:ss.sssZ"
+function toIsoUtc(input?: string): string | undefined {
+    if (!input) return undefined;
+    const s = input.includes("T") ? input : input.replace(" ", "T");
+    const d = new Date(s);
+    return isNaN(d.getTime()) ? undefined : d.toISOString();
+}
+
+
+
 const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
-    const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [showPwd, setShowPwd] = useState(false);
-    const [loading, setLoading] = useState(false);
-    const [isLoggedIn, setIsLoggedIn] = useState(false);
-    const [data, setData] = useState <Login>();
+    const [email, setEmail] = useState<string>("");
+    const [password, setPassword] = useState<string>("");
+    const [showPwd, setShowPwd] = useState<boolean>(false);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [error, setError] = useState<string | null>(null);
+    const [tokenlocal , setTokenLocal] = useState<string>();
+    const [itemLocalStorage, setItemLocalStorage] = useState<LoginFormState>();
 
     const canSubmit = emailRegex.test(email) && password.length >= 4 && !loading;
 
-    const handleSubmit = async (e : any): Promise<void> => {
-        e.preventDefault();
-        console.log("password", password);
-        fetchLog (email, password)
-                .then(res =>{
-                    setIsLoggedIn(true);
-                    setData(res);
-                    console.log(res)
-
-                });
-    }
-//////////////////////////////////////////////////////////////////
     useEffect(() => {
-        const raw = localStorage.getItem("ac.selection");
-        if (!raw) return {};
-        try {
-            const parsed = JSON.parse(raw) as QuoteLS;
-            const id = parsed.id
-            const year = parsed.year
-            const services = parsed.services
-            return {
-                immat: parsed.immat ?? undefined,
-                km: parsed.km ?? undefined,
-                make: parsed.make ?? null,
-                model: parsed.model ?? null,
-                year,
-                services,
-            };
-        } catch {
-            return {};
+        const saved = localStorage.getItem("ac.selection");
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            setItemLocalStorage(parsed);
+            console.log(itemLocalStorage);
+
         }
-    },[isLoggedIn])
-///////////////////////////////////////////////////////////////////////////////////////
+    }, []);
+
+
+
+    async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
+        e.preventDefault();
+        if (!canSubmit) return;
+
+        setError(null);
+        setLoading(true);
+        try {
+            if (loginFn) {
+                await loginFn(email, password);
+            } else {
+                // POST /auth/login (selon ta fonction fetchLog)
+                await fetchLog(email, password)
+                    .then(data => setTokenLocal(data.token));
+            }
+
+            await sendAppointmentAfterLogin();
+            onSuccess?.();
+        } catch {
+            setError("Identifiants incorrects ou service indisponible.");
+        } finally {
+            setLoading(false);
+        }
+    }
+
+    useEffect(() => {
+            try {
+                 localStorage.setItem("ac.account", JSON.stringify(tokenlocal));
+
+
+            } catch (e) {
+                console.error("Impossible de parser le localStorage", e);
+            }
+
+    }, [tokenlocal]);
+
+
+    async function sendAppointmentAfterLogin(): Promise<void> {
+        /*const body = buildAppointmentBodyFromLS();*/
+
+        const selection = localStorage.getItem("ac.selection");
+        const parsed = JSON.parse(selection);
+        const id = parsed.id;
+        const appointment = parsed.appointment;
+        const startDate = appointment.startDate;
+        const endDate = appointment.endDate;
+        const services = appointment.services;
+        const carId = 1;
+        const account = localStorage.getItem("ac.account");
+        const accountparsed = JSON.parse(account);
+        const token = accountparsed;
+        console.log(token);
+        postAppointment(token, id,startDate ,endDate ,services, carId)
+        e.preventDefault();
+    }
 
     return (
         <Card
@@ -82,11 +133,12 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
             <CardContent sx={{ p: 3 }}>
                 <form onSubmit={handleSubmit} noValidate>
                     <Stack spacing={2}>
+                        {error && <Alert severity="error">{error}</Alert>}
 
                         <TextField
                             label="Email"
                             value={email}
-                            onChange={(e) => setEmail(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setEmail(e.target.value)}
                             type="email"
                             autoComplete="email"
                             required
@@ -97,7 +149,7 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                         <TextField
                             label="Mot de passe"
                             value={password}
-                            onChange={(e) => setPassword(e.target.value)}
+                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setPassword(e.target.value)}
                             type={showPwd ? "text" : "password"}
                             autoComplete="current-password"
                             required

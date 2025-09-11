@@ -1,4 +1,15 @@
 export type Login = {
-    password: string;
     email: string;
+    token: string;
+
+}
+
+export type LoginFormState = {
+    garageId: number;
+    carId: number;
+    startDate: string,
+    endDate: string,
+    comment: string,
+    serviceId: number[];
+
 }
