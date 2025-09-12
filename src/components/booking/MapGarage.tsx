@@ -1,9 +1,9 @@
 import {MapContainer, Marker, Popup, TileLayer, useMap} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import {Box} from "@mui/material";
-import type {Geoloc} from "../types/geoloc";
+import type {Geoloc} from "../../types/geoloc.ts";
 import {useEffect, useState} from "react";
-import {axiosGeolocWithGPS} from "../api/axiosGeoloc.ts";
+import {axiosGeolocWithGPS} from "../../api/axiosGeoloc.ts";
 
 type MapProps = {
     garages: Geoloc[];

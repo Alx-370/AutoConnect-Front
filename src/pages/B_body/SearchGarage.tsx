@@ -2,18 +2,18 @@ import {Box, Card, CardHeader, FormControl, IconButton, InputBase, MenuItem, Pap
 import { useTheme } from "@mui/material/styles";
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
-import MapGarage from "../../components/MapGarage";
+import MapGarage from "../../components/booking/MapGarage.tsx";
 import "leaflet/dist/leaflet.css";
-import BookingSteps from "../../components/BookingSteps";
-import GelocList from "../../components/GelocList";
+import BookingSteps from "../../components/booking/BookingSteps.tsx";
+import GelocList from "../../components/booking/GelocList.tsx";
 import { useEffect, useState } from "react";
 import SearchIcon from "@mui/icons-material/Search";
 import PlaceIcon from "@mui/icons-material/Place";
 import GarageIcon from "@mui/icons-material/Garage";
 import type { Geoloc } from "../../types/geoloc";
-import CardGeolocGarage from "../../components/CardGeolocGarage";
+import CardGeolocGarage from "../../components/booking/CardGeolocGarage.tsx";
 import { axiosGeolocWithGPS } from "../../api/axiosGeoloc";
-import HeroTitle from "../../components/HeroTitle.tsx";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 

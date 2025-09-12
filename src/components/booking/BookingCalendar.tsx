@@ -8,12 +8,15 @@ import EventAvailableIcon from "@mui/icons-material/EventAvailable";
 import dayjs, { Dayjs } from "dayjs";
 import customParseFormat from "dayjs/plugin/customParseFormat";
 import "dayjs/locale/fr";
-import type {Appointment} from "../types/ApointmentDto.ts";
+import type {Appointment} from "../../types/apointment-dto.ts";
 
 dayjs.locale("fr");
 dayjs.extend(customParseFormat);
 
-export type Slot = { start: string; end: string };
+export type Slot = {
+    start: string;
+    end: string;
+};
 
 type Props = {
     onPick?: (slot: Slot) => void;
@@ -21,11 +24,10 @@ type Props = {
     endHour?: number;
     stepMin?: number;
     disabledTimes?: Appointment[];
-    getHoursForDate?: (date: Dayjs) => { openingHour: number; closingHour: number } | null;};
+    getHoursForDate?: (date: Dayjs) => { openingHour: number; closingHour: number } | null;
+};
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
-
-
 const SLOT_FMT = "YYYY-MM-DD[T]HH:mm";
 
 const BookingCalendar = ({onPick = () => {} , stepMin = 30,
@@ -36,10 +38,8 @@ const BookingCalendar = ({onPick = () => {} , stepMin = 30,
     const theme = useTheme();
     const isXs = useMediaQuery(theme.breakpoints.down("sm"));
 
-
     const toLocalIso = (d: dayjs.Dayjs) =>
         d.second(0).millisecond(0).format(SLOT_FMT);
-
 
     const disabledTimesNormalized = useMemo(() => {
         if (!disabledTimes) return [];
@@ -65,7 +65,7 @@ const BookingCalendar = ({onPick = () => {} , stepMin = 30,
     const hours = date && getHoursForDate ? getHoursForDate(date) : null;
 
     const slots = useMemo(() => {
-        if (!date || !hours) return []; // Pas d'heures = pas de créneaux
+        if (!date || !hours) return [];
 
         const out: Slot[] = [];
         const d = date.startOf("day");

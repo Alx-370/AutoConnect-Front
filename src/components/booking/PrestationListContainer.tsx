@@ -2,10 +2,10 @@ import { useEffect, useState } from "react";
 import {Box, Accordion, AccordionSummary, AccordionDetails, Typography, Chip, Stack, Button,} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import BuildCircleIcon from "@mui/icons-material/BuildCircle";
-import PrestationItem from "./PrestationItem";
-import type { PrestationItem as Prestation } from "../types/prestationItem";
-import { fetchServices } from "../api/axiosServices";
-import type { PrestationListContainerProps as Props } from "../types/propsPrestationItem";
+import PrestationItem from "./PrestationItem.tsx";
+import type { PrestationItem as Prestation } from "../../types/prestation-item.ts";
+import { fetchServices } from "../../api/axiosServices.ts";
+import type { PrestationListContainerProps as Props } from "../../types/props-prestation-item.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 

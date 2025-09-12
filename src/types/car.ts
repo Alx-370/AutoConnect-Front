@@ -19,3 +19,5 @@ export type CarSearchProps = {
     onChangeImmat: (v: string) => void;
     onChangeKm: (v: string) => void;
 };
+
+export type CarDetailProps = {}

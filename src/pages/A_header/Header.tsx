@@ -1,10 +1,10 @@
 import React from "react";
-import {AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, useMediaQuery, useTheme,} from "@mui/material";
+import {AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, useMediaQuery, useTheme} from "@mui/material";
 import DirectionsCarFilledIcon from "@mui/icons-material/DirectionsCarFilled";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import BuildIcon from "@mui/icons-material/Build";
 import MenuIcon from "@mui/icons-material/Menu";
-
+import { Link as RouterLink } from "react-router";
 
 const Header = () => {
     const theme = useTheme();
@@ -18,44 +18,41 @@ const Header = () => {
         <AppBar
             position="static"
             color="primary"
-            sx={{
-                boxShadow: 2,
-                background: "linear-gradient(90deg,#1976d2,#2196f3)",
-            }}
+            sx={{ boxShadow: 2, background: "linear-gradient(90deg,#1976d2,#2196f3)" }}
         >
             <Toolbar sx={{ minHeight: { xs: 56, sm: 64 }, px: { xs: 1, sm: 2 } }}>
-                <Typography
-                    variant={isMdUp ? "h6" : "subtitle1"}
+                <Box
+                    component={RouterLink}
+                    to="/"
+                    aria-label="Aller à l'accueil AutoConnect"
                     sx={{
                         display: "flex",
                         alignItems: "center",
                         gap: 1,
-                        fontWeight: 700,
-                        letterSpacing: 0.5,
-                        whiteSpace: "nowrap",
+                        textDecoration: "none",
+                        color: "inherit",
+                        "&:hover": { opacity: 0.9 },
                     }}
                 >
                     <DirectionsCarFilledIcon fontSize={isMdUp ? "large" : "medium"} />
-                    AutoConnect
-                </Typography>
+                    <Typography
+                        variant={isMdUp ? "h6" : "subtitle1"}
+                        sx={{ fontWeight: 700, letterSpacing: 0.5, whiteSpace: "nowrap" }}
+                    >
+                        AutoConnect
+                    </Typography>
+                </Box>
 
                 <Box sx={{ flexGrow: 1 }} />
 
-
                 {isMdUp ? (
-
                     <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
                         <Button
                             size="medium"
                             variant="outlined"
                             color="inherit"
                             startIcon={<BuildIcon />}
-                            sx={{
-                                borderColor: "white",
-                                color: "white",
-                                "&:hover": { borderColor: "white" },
-                                textTransform: "none",
-                            }}
+                            sx={{ borderColor: "white", color: "white", "&:hover": { borderColor: "white" }, textTransform: "none" }}
                         >
                             Garagiste
                         </Button>
@@ -64,26 +61,14 @@ const Header = () => {
                             variant="contained"
                             color="secondary"
                             startIcon={<PersonOutlineIcon />}
-                            sx={{
-                                fontWeight: 700,
-                                color: "white",
-                                textTransform: "none",
-                                background: "#0d47a1",
-                                "&:hover": { background: "#08306b" },
-                            }}
+                            sx={{ fontWeight: 700, color: "white", textTransform: "none", background: "#0d47a1", "&:hover": { background: "#08306b" } }}
                         >
                             Automobiliste
                         </Button>
                     </Box>
                 ) : (
-
                     <>
-                        <IconButton
-                            color="inherit"
-                            aria-label="menu"
-                            onClick={openMenu}
-                            sx={{ color: "white" }}
-                        >
+                        <IconButton color="inherit" aria-label="menu" onClick={openMenu} sx={{ color: "white" }}>
                             <MenuIcon />
                         </IconButton>
                         <Menu
@@ -107,6 +92,6 @@ const Header = () => {
             </Toolbar>
         </AppBar>
     );
-}
+};
 
 export default Header;

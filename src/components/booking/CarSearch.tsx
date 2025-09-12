@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import {Accordion, AccordionSummary, AccordionDetails, Autocomplete, TextField, Box, Stack, Typography, Chip, Button} from "@mui/material";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import DirectionsCarFilledIcon from "@mui/icons-material/DirectionsCarFilled";
-import { fetchMakes, fetchModels, fetchYears } from "../api/axiosCar";
-import type {MakeDto, ModelDto, YearDto, MakeName, ModelName, YearValue, CarSearchProps} from "../types/car";
+import { fetchMakes, fetchModels, fetchYears } from "../../api/axiosCar.ts";
+import type {MakeDto, ModelDto, YearDto, MakeName, ModelName, YearValue, CarSearchProps} from "../../types/car.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 

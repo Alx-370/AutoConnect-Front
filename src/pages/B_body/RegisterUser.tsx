@@ -1,10 +1,10 @@
 import { useNavigate } from "react-router";
 import Header from "../A_header/Header.tsx";
-import HeroTitle from "../../components/HeroTitle.tsx";
-import BookingSteps from "../../components/BookingSteps.tsx";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
+import BookingSteps from "../../components/booking/BookingSteps.tsx";
 import {Box} from "@mui/material";
 import Footer from "../C_footer/Footer.tsx";
-import RegisterForm from "../../components/RegisterForm.tsx";
+import RegisterForm from "../../components/common/RegisterForm.tsx";
 
 
 const RegisterUser = () => {

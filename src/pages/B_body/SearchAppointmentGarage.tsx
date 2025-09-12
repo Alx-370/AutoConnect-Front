@@ -1,14 +1,14 @@
 import {useEffect, useState} from "react";
 import Header from "../A_header/Header.tsx";
 import Footer from "../C_footer/Footer.tsx";
-import BookingSteps from "../../components/BookingSteps.tsx";
+import BookingSteps from "../../components/booking/BookingSteps.tsx";
 import {Box} from "@mui/material";
-import QuoteCard from "../../components/QuoteCard.tsx";
-import BookingCalendar from "../../components/BookingCalendar.tsx";
-import type { Slot } from "../../components/BookingCalendar.tsx";
-import HeroTitle from "../../components/HeroTitle.tsx";
+import QuoteCard from "../../components/booking/QuoteCard.tsx";
+import BookingCalendar from "../../components/booking/BookingCalendar.tsx";
+import type { Slot } from "../../components/booking/BookingCalendar.tsx";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
 import {fetchCalendar} from "../../api/axiosCalendar.ts";
-import type {ApointmentDto} from "../../types/ApointmentDto.ts";
+import type {ApointmentDto} from "../../types/apointment-dto.ts";
 
 const SearchAppointmentGarage = () => {
     const [slot, setSlot] = useState<Slot | null>(null);
@@ -26,11 +26,11 @@ const SearchAppointmentGarage = () => {
             dimanche: "SUNDAY",
         };
         if (!garageOpeningHours || !date) return null;
-        const dayOfWeekFr = date.format("dddd").toLowerCase(); // "lundi", "mardi", etc.
+        const dayOfWeekFr = date.format("dddd").toLowerCase();
         const dayOfWeek = daysMap[dayOfWeekFr];
         const dayConfig = garageOpeningHours.find(d => d.dayOfWeek === dayOfWeek);
 
-        if (!dayConfig) return null; // garage fermé
+        if (!dayConfig) return null;
 
         const openingHour = parseInt(dayConfig.openingHour.split(":")[0], 10);
         const closingHour = parseInt(dayConfig.closingHour.split(":")[0], 10);
