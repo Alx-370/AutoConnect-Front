@@ -6,8 +6,8 @@ import ReceiptLongIcon from "@mui/icons-material/ReceiptLong";
 import PrintIcon from "@mui/icons-material/Print";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import StorefrontIcon from "@mui/icons-material/Storefront";
-import type { QuoteLS, ServiceItem } from "../types/quote";
-import type { Slot } from "./BookingCalendar";
+import type { QuoteLS, ServiceItem } from "../../types/quote.ts";
+import type { Slot } from "./BookingCalendar.tsx";
 import { useNavigate } from "react-router";
 
 type QuoteCardProps = {

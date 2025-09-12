@@ -2,8 +2,8 @@ import {useEffect, useState} from "react";
 import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment, Link} from "@mui/material";
 import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
 import { Link as RouterLink } from "react-router";
-import {fetchLog, postAppointment} from "../api/axiosLog";
-import type {LoginFormState} from "../types/login.ts";
+import {fetchLog, postAppointment} from "../../api/axiosLog.ts";
+import type {LoginFormState} from "../../types/login.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;

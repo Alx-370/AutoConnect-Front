@@ -1,10 +1,10 @@
 import {Card, CardContent, Typography, Avatar, Button} from "@mui/material";
 import StoreIcon from "@mui/icons-material/Store";
 
-import type {Geoloc} from "../types/geoloc";
+import type {Geoloc} from "../../types/geoloc.ts";
 import {useState} from "react";
 import {useNavigate} from "react-router";
-import type {QuoteLS} from "../types/quote.ts";
+import type {QuoteLS} from "../../types/quote.ts";
 
 interface CardGeolocGarageProps {
     geoloc: Geoloc;

@@ -1,8 +1,8 @@
 import Header from "../A_header/Header.tsx";
-import BookingSteps from "../../components/BookingSteps.tsx";
+import BookingSteps from "../../components/booking/BookingSteps.tsx";
 import Footer from "../C_footer/Footer.tsx";
-import LoginForm from "../../components/LoginForm.tsx";
-import HeroTitle from "../../components/HeroTitle.tsx";
+import LoginForm from "../../components/booking/LoginForm.tsx";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
 import { Box } from "@mui/material";
 import { useNavigate, useLocation } from "react-router";
 

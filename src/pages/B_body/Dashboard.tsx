@@ -1,24 +1,20 @@
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
 import {Box, Button} from "@mui/material";
-import CarSearch from "../../components/CarSearch";
-import PrestationListContainer from "../../components/PrestationListContainer";
-import BookingSteps from "../../components/BookingSteps";
+import CarSearch from "../../components/booking/CarSearch.tsx";
+import PrestationListContainer from "../../components/booking/PrestationListContainer.tsx";
+import BookingSteps from "../../components/booking/BookingSteps.tsx";
 import { useState, useMemo } from "react";
 import { useNavigate } from "react-router";
-import HeroTitle from "../../components/HeroTitle.tsx";
-
+import HeroTitle from "../../components/common/HeroTitle.tsx";
+import type {CarSelection} from "../../types/car.ts";
 
 const Dashboard = () => {
     const navigate = useNavigate();
 
-    const [immat, setImmat] = useState("");
-    const [km, setKm] = useState("");
-    const [carSel, setCarSel] = useState<{
-        make: string | null;
-        model: string | null;
-        year: string | number | null;
-    }>({ make: null, model: null, year: null });
+    const [immat, setImmat] = useState <string>("");
+    const [km, setKm] = useState <string>("");
+    const [carSel, setCarSel] = useState <CarSelection> ({} as CarSelection);
 
     const [selectedServiceIds, setSelectedServiceIds] = useState<Set<number | string>>(new Set());
 
@@ -34,20 +30,19 @@ const Dashboard = () => {
         });
     };
 
-    const canContinue = useMemo(() => {
-        const hasService = selectedServiceIds.size > 0;
+    const canContinue :boolean = useMemo(() :boolean => {
+        const hasService :boolean = selectedServiceIds.size > 0;
         return (
             immat.trim().length > 0 &&
             km.trim().length > 0 &&
             !!carSel.make &&
             !!carSel.model &&
             carSel.year !== null &&
-            carSel.year !== "" &&
             hasService
         );
     }, [immat, km, carSel, selectedServiceIds]);
 
-    const handleSave = () => {
+    const handleSaveInLocalStorage = () => {
         const payload = {
             immat,
             km,
@@ -87,7 +82,7 @@ const Dashboard = () => {
 
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <Button
-                        onClick={handleSave}
+                        onClick={handleSaveInLocalStorage}
                         variant="contained"
                         disabled={!canContinue}
                         sx={{ mt: 2, px: 3, py: 1, borderRadius: 2, textTransform: "none", boxShadow: 2 }}

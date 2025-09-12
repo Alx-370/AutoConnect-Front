@@ -1,7 +1,7 @@
 import {useEffect, useState} from "react";
 
-import type {Geoloc} from "../types/geoloc.ts";
-import {axiosGeoloc} from "../api/axiosGeoloc.ts";
+import type {Geoloc} from "../../types/geoloc.ts";
+import {axiosGeoloc} from "../../api/axiosGeoloc.ts";
 
 type GelocListProps = {
     searchQuery: string;
