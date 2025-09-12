@@ -1,7 +1,7 @@
 import axios from "axios";
 import type { Login } from "../types/login.ts";
 
-const API_BASE = "http://localhost:8080";
+const API_BASE = import.meta.env.VITE_API_BASE;
 
 
 export async function fetchLog(email : string, password : string): Promise<Login> {

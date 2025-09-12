@@ -42,9 +42,10 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
         onChangeCar?.({ make, model, year });
     }, [make, model, year, onChangeCar]);
 
-    const makeOptions: string[]  = makes.map(m => m.name);
-    const modelOptions: string[] = models.map(m => m.name);
-    const yearOptions: string[]  = years.map(y => String(y.years));
+    const makeOptions  = Array.isArray(makes)  ? makes.map(m => m.name) : [];
+    const modelOptions = Array.isArray(models) ? models.map(m => m.name) : [];
+    const yearOptions  = Array.isArray(years)  ? years.map(y => String(y.years)) : [];
+
 
     /////////////////////// Chips de résumé ////////////////////////////////
     const chips: string[] = [
@@ -186,6 +187,7 @@ const CarSearch = ({ onChangeCar, immat, km, onChangeImmat, onChangeKm }: CarSea
                             value={make ?? ""}
                             onChange={commitMake}
                             onInputChange={(_, v) => setMake(v?.trim() || null)}
+                            isOptionEqualToValue={(option, value) => option === value}
                             sx={{ width: 250 }}
                             renderInput={(p) => <TextField {...p} label="Marque" placeholder="ex: Peugeot" />}
                         />
