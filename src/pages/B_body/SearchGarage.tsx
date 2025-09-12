@@ -95,7 +95,6 @@ const SearchGarage = () => {
                     }}
                 />
 
-                {/* Grille responsive : colonne (mobile) → 2 colonnes (desktop) */}
                 <Box
                     sx={{
                         display: "grid",
@@ -105,7 +104,7 @@ const SearchGarage = () => {
                         minHeight: { xs: "auto", md: "70vh" },
                     }}
                 >
-                    {/* Colonne gauche : recherche + résultats */}
+
                     <Box
                         sx={{
                             p: { xs: 1.5, sm: 2 },
@@ -158,7 +157,7 @@ const SearchGarage = () => {
                             </IconButton>
                         </Paper>
 
-                        {/* Liste des résultats */}
+
                         <Box
                             sx={{
                                 display: show ? "block" : "none",
