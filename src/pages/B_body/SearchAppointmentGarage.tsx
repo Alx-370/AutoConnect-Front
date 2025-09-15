@@ -71,10 +71,7 @@ const SearchAppointmentGarage = () => {
         <>
             <Header />
             <Box sx={{display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <HeroTitle
-                    title="AutoConnect"
-                    sx={{ mt: 3 }}
-                />
+                <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
                 <BookingSteps activeStep={2} />
             </Box>
 

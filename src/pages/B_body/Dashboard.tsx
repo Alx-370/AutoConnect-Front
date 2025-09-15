@@ -60,10 +60,7 @@ const Dashboard = () => {
         <>
             <Header />
             <Box sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-            <HeroTitle
-                title="AutoConnect"
-                sx={{ mt: 3 }}
-            />
+            <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
 
                 <p style={{ padding: 16, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     La tranquillité commence ici : comparez les meilleurs garages de votre région et optez
