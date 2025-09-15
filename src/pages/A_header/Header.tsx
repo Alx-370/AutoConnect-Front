@@ -1,5 +1,5 @@
 import React from "react";
-import {AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, useMediaQuery, useTheme} from "@mui/material";
+import {AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, useMediaQuery, useTheme,} from "@mui/material";
 import DirectionsCarFilledIcon from "@mui/icons-material/DirectionsCarFilled";
 import PersonOutlineIcon from "@mui/icons-material/PersonOutline";
 import BuildIcon from "@mui/icons-material/Build";
@@ -52,7 +52,14 @@ const Header = () => {
                             variant="outlined"
                             color="inherit"
                             startIcon={<BuildIcon />}
-                            sx={{ borderColor: "white", color: "white", "&:hover": { borderColor: "white" }, textTransform: "none" }}
+                            component={RouterLink}
+                            to="/garagiste"
+                            sx={{
+                                borderColor: "white",
+                                color: "white",
+                                "&:hover": { borderColor: "white" },
+                                textTransform: "none",
+                            }}
                         >
                             Garagiste
                         </Button>
@@ -61,7 +68,15 @@ const Header = () => {
                             variant="contained"
                             color="secondary"
                             startIcon={<PersonOutlineIcon />}
-                            sx={{ fontWeight: 700, color: "white", textTransform: "none", background: "#0d47a1", "&:hover": { background: "#08306b" } }}
+                            component={RouterLink}
+                            to="/automobiliste"
+                            sx={{
+                                fontWeight: 700,
+                                color: "white",
+                                textTransform: "none",
+                                background: "#0d47a1",
+                                "&:hover": { background: "#08306b" },
+                            }}
                         >
                             Automobiliste
                         </Button>
@@ -78,11 +93,11 @@ const Header = () => {
                             anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
                             transformOrigin={{ vertical: "top", horizontal: "right" }}
                         >
-                            <MenuItem onClick={closeMenu}>
+                            <MenuItem onClick={closeMenu} component={RouterLink} to="/garagiste">
                                 <BuildIcon fontSize="small" style={{ marginRight: 8 }} />
                                 Garagiste
                             </MenuItem>
-                            <MenuItem onClick={closeMenu}>
+                            <MenuItem onClick={closeMenu} component={RouterLink} to="/automobiliste">
                                 <PersonOutlineIcon fontSize="small" style={{ marginRight: 8 }} />
                                 Automobiliste
                             </MenuItem>

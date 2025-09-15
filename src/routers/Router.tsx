@@ -16,7 +16,7 @@ const Router = () => {
                 <Route path="/search-appointment-garage" element={<SearchAppointmentGarage/>}/>
                 <Route path="/login-user" element={<LoginUser/>}/>
                 <Route path="/register-user" element={<RegisterUser/>}/>
-            <Route path="/garage-calendar" element={<GarageCalendar/>}/>
+                <Route path="/garage-calendar" element={<GarageCalendar/>}/>
         </Routes>
     );
 };
