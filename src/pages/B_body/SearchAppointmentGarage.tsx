@@ -38,7 +38,6 @@ const SearchAppointmentGarage = () => {
         return {openingHour, closingHour};
     };
 
-
     useEffect(() => {
         const saved = localStorage.getItem("ac.selection");
         if (saved) {
@@ -66,15 +65,11 @@ const SearchAppointmentGarage = () => {
         }
     }, [garageId]);
 
-
     return (
         <>
             <Header />
             <Box sx={{display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <HeroTitle
-                    title="AutoConnect"
-                    sx={{ mt: 3 }}
-                />
+                <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
                 <BookingSteps activeStep={2} />
             </Box>
 
@@ -97,7 +92,6 @@ const SearchAppointmentGarage = () => {
                     />
                 )}
             </Box>
-
 
             <Footer />
         </>

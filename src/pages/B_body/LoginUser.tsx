@@ -15,10 +15,7 @@ const LoginUser = () => {
         <>
             <Header />
 
-            <HeroTitle
-                title="AutoConnect"
-                sx={{ mt: 3 }}
-            />
+            <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
 
             <BookingSteps activeStep={3} />
 

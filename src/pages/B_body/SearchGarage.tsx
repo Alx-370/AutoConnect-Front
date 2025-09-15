@@ -49,7 +49,6 @@ const SearchGarage = () => {
         );
     };
 
-
     useEffect(() => {
         if (userCoords) {
             axiosGeolocWithGPS(services, userCoords.lat, userCoords.lon, radius).then((data) =>
@@ -62,10 +61,7 @@ const SearchGarage = () => {
         <>
             <Header />
             <Box sx={{display: "flex", flexDirection: "column", alignItems: "center" }}>
-                <HeroTitle
-                    title="AutoConnect"
-                    sx={{ mt: 3 }}
-                />
+                <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
                 <BookingSteps activeStep={1} />
             </Box>
 
@@ -157,7 +153,6 @@ const SearchGarage = () => {
                             </IconButton>
                         </Paper>
 
-
                         <Box
                             sx={{
                                 display: show ? "block" : "none",
@@ -192,7 +187,6 @@ const SearchGarage = () => {
                             )}
                         </Box>
                     </Box>
-
 
                     <Box
                         sx={{
