@@ -1,21 +1,20 @@
 import Header from "../A_header/Header";
 import Footer from "../C_footer/Footer";
-import {Box, Button, TextField} from "@mui/material";
-import CarSearch from "../../components/CarSearch.tsx";
-import PrestationListContainer from "../../components/PrestationListContainer.tsx";
-import {useState} from "react";
-import BookingSteps from "../../components/BookingSteps.tsx";
-
-
+import {Box, Button} from "@mui/material";
+import CarSearch from "../../components/booking/CarSearch.tsx";
+import PrestationListContainer from "../../components/booking/PrestationListContainer.tsx";
+import BookingSteps from "../../components/booking/BookingSteps.tsx";
+import { useState, useMemo } from "react";
+import { useNavigate } from "react-router";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
+import type {CarSelection} from "../../types/car.ts";
 
 const Dashboard = () => {
+    const navigate = useNavigate();
 
-    const [immat, setImmat] = useState("");
-    const [km, setKm]       = useState("");
-    const [carSel, setCarSel] = useState<{ make: string|null; model: string|null; year: string|number|null }>
-    ({
-        make: null, model: null, year: null,
-    });
+    const [immat, setImmat] = useState <string>("");
+    const [km, setKm] = useState <string>("");
+    const [carSel, setCarSel] = useState <CarSelection> ({} as CarSelection);
 
     const [selectedServiceIds, setSelectedServiceIds] = useState<Set<number | string>>(new Set());
 
@@ -31,8 +30,19 @@ const Dashboard = () => {
         });
     };
 
+    const canContinue :boolean = useMemo(() :boolean => {
+        const hasService :boolean = selectedServiceIds.size > 0;
+        return (
+            immat.trim().length > 0 &&
+            km.trim().length > 0 &&
+            !!carSel.make &&
+            !!carSel.model &&
+            carSel.year !== null &&
+            hasService
+        );
+    }, [immat, km, carSel, selectedServiceIds]);
 
-    const handleSave = () => {
+    const handleSaveInLocalStorage = () => {
         const payload = {
             immat,
             km,
@@ -43,74 +53,48 @@ const Dashboard = () => {
         };
         localStorage.setItem("ac.selection", JSON.stringify(payload));
         console.log("saved:", payload);
+        navigate("/search-garage");
     };
 
     return (
         <>
             <Header />
-            <Box sx={{ minHeight: "100vh", display: "flex", flexDirection: "column" }}>
-            <h1
-                style={{
-                    padding: 16,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                AutoConnect
-            </h1>
+            <Box sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
+            <HeroTitle
+                title="AutoConnect"
+                sx={{ mt: 3 }}
+            />
 
-            <p
-                style={{
-                    padding: 16,
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                }}
-            >
-                La tranquillité commence ici : comparez les meilleurs garages de votre
-                région et optez pour celui qui correspond le mieux à vos attentes.
-            </p>
-                <BookingSteps />
+                <p style={{ padding: 16, display: "flex", justifyContent: "center", alignItems: "center" }}>
+                    La tranquillité commence ici : comparez les meilleurs garages de votre région et optez
+                    pour celui qui correspond le mieux à vos attentes.
+                </p>
 
-            <div style={{ display: "flex", gap: 16, justifyContent: "center", marginTop: 20 }}>
-                <TextField
-                    sx={{ width: 180, ml:1 }}
-                    id="outlined-basic"
-                    label="Immatriculation"
-                    variant="outlined"
-                    value={immat}
-                    onChange={(e) => setImmat(e.target.value)}
+                <BookingSteps activeStep={0} />
+
+                <CarSearch
+                    immat={immat}
+                    km={km}
+                    onChangeImmat={setImmat}
+                    onChangeKm={setKm}
+                    onChangeCar={setCarSel}
                 />
-                <TextField
-                    sx={{ width: 180, mr:1 }}
-                    id="outlined-basic2"
-                    label="Kilométrage"
-                    variant="outlined"
-                    value={km}
-                    onChange={(e) => setKm(e.target.value)}
-                />
-            </div>
 
-            <CarSearch onChangeCar={setCarSel} />
-            <PrestationListContainer  selectedIds={selectedServiceIds}
-                                      onToggleId={toggleService}/>
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <Button
-                        onClick={handleSave}
+                        onClick={handleSaveInLocalStorage}
                         variant="contained"
-                        sx={{
-                            mt: 2,
-                            px: 3,
-                            py: 1,
-                            borderRadius: 2,
-                            textTransform: "none",
-                            boxShadow: 2,
-                        }}
+                        disabled={!canContinue}
+                        sx={{ mt: 2, px: 3, py: 1, borderRadius: 2, textTransform: "none", boxShadow: 2 }}
                     >
-                    Enregistrer ma sélection
-                </Button>
+                        Enregistrer mes informations
+                    </Button>
                 </div>
+
+                <PrestationListContainer
+                    selectedIds={selectedServiceIds}
+                    onToggleId={toggleService}
+                />
             </Box>
             <Footer />
         </>

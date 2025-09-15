@@ -1,5 +1,5 @@
 import { Button, Stack, Typography, Checkbox } from "@mui/material";
-import type { PrestationItemProps as Props } from "../types/propsPrestationItem.ts";
+import type { PrestationItemProps as Props } from "../../types/props-prestation-item.ts";
 
 const PrestationItem = ({ prestation, selected = false, onToggle }: Props) => {
     const handleClick = () => {

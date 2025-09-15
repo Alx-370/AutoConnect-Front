@@ -9,6 +9,7 @@ export type Geoloc = {
     codeCommune: string;
     longitude: number;
     latitude: number;
+    phone: string;
 };
 
 export type UserLocation = {

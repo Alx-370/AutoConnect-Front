@@ -1,13 +1,26 @@
 import axios from "axios";
 import type { MakeDto, ModelDto, YearDto } from "../types/car";
 
-const BASE = "http://localhost:8080";
+const API_BASE= import.meta.env.VITE_API_BASE;
+const BASE_ENDPOINT_CAR = import.meta.env.VITE_BASE_ENDPOINT_CAR;
 
-export const fetchMakes = () =>
-    axios.get<MakeDto[]>(`${BASE}/api/car/mark`).then(r => r.data);
+const BASE_URL = `${API_BASE}${BASE_ENDPOINT_CAR}`;
 
-export const fetchModels = (make: string) =>
-    axios.get<ModelDto[]>(`${BASE}/api/car/model`, { params: { make } }).then(r => r.data);
+export async function fetchMakes(): Promise<MakeDto[]> {
+    const { data } = await axios.get<MakeDto[]>(`${BASE_URL}/mark`);
+    return data;
+}
 
-export const fetchYears = (make: string, model: string) =>
-    axios.get<YearDto[]>(`${BASE}/api/car/year`, { params: { make, model } }).then(r => r.data);
+export async function fetchModels(make: string): Promise<ModelDto[]> {
+    const { data } = await axios.get<ModelDto[]>(`${BASE_URL}/model`, {
+        params: { make },
+    });
+    return data;
+}
+
+export async function fetchYears(make: string, model: string): Promise<YearDto[]> {
+    const { data } = await axios.get<YearDto[]>(`${BASE_URL}/year`, {
+        params: { make, model },
+    });
+    return data;
+}

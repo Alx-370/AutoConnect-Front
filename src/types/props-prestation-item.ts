@@ -1,4 +1,4 @@
-import type { PrestationItem } from "./prestationItem";
+import type { PrestationItem } from "./prestation-item.ts";
 
 export type PrestationItemProps = {
     prestation: PrestationItem;
