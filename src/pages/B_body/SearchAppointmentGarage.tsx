@@ -38,7 +38,6 @@ const SearchAppointmentGarage = () => {
         return {openingHour, closingHour};
     };
 
-
     useEffect(() => {
         const saved = localStorage.getItem("ac.selection");
         if (saved) {
@@ -65,7 +64,6 @@ const SearchAppointmentGarage = () => {
             );
         }
     }, [garageId]);
-
 
     return (
         <>
@@ -94,7 +92,6 @@ const SearchAppointmentGarage = () => {
                     />
                 )}
             </Box>
-
 
             <Footer />
         </>

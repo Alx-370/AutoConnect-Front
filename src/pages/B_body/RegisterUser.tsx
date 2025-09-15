@@ -10,7 +10,6 @@ import RegisterForm from "../../components/common/RegisterForm.tsx";
 const RegisterUser = () => {
     const navigate = useNavigate();
 
-
     return (
         <>
             <Header />
@@ -22,8 +21,6 @@ const RegisterUser = () => {
             <Box sx={{ width: "100%", display: "grid", placeItems: "center", px: 2, my: 5 }}>
                 <RegisterForm onSuccess={() => navigate("/login-user")} />
             </Box>
-
-
 
             <Footer />
         </>

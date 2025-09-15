@@ -49,7 +49,6 @@ const SearchGarage = () => {
         );
     };
 
-
     useEffect(() => {
         if (userCoords) {
             axiosGeolocWithGPS(services, userCoords.lat, userCoords.lon, radius).then((data) =>
@@ -154,7 +153,6 @@ const SearchGarage = () => {
                             </IconButton>
                         </Paper>
 
-
                         <Box
                             sx={{
                                 display: show ? "block" : "none",
@@ -189,7 +187,6 @@ const SearchGarage = () => {
                             )}
                         </Box>
                     </Box>
-
 
                     <Box
                         sx={{
