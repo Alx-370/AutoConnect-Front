@@ -77,6 +77,13 @@ const Dashboard = () => {
                     onChangeCar={setCarSel}
                 />
 
+
+
+                <PrestationListContainer
+                    selectedIds={selectedServiceIds}
+                    onToggleId={toggleService}
+                />
+
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <Button
                         onClick={handleSaveInLocalStorage}
@@ -84,14 +91,9 @@ const Dashboard = () => {
                         disabled={!canContinue}
                         sx={{ mt: 2, px: 3, py: 1, borderRadius: 2, textTransform: "none", boxShadow: 2 }}
                     >
-                        Enregistrer mes informations
+                        Voir les garages autour de moi
                     </Button>
                 </div>
-
-                <PrestationListContainer
-                    selectedIds={selectedServiceIds}
-                    onToggleId={toggleService}
-                />
             </Box>
             <Footer />
         </>
