@@ -18,7 +18,7 @@ const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
     useEffect(() => {
         fetchServices()
             .then((data) => {
-                setItems(data);
+                setItems(Array.isArray(data) ? data : []);
             })
             .catch((e: unknown) =>
                 setError(e instanceof Error ? e.message : "Erreur inconnue")

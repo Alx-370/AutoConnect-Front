@@ -1,66 +1,84 @@
-import {useState} from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import Footer from "../C_footer/Footer.tsx";
-import Header from "../A_header/Header.tsx";
+import Footer from "../C_footer/Footer";
+import Header from "../A_header/Header";
+import {useLoaderData} from "react-router";
 
-type Appointment = {
+type AppointmentResponse = {
+    customerId: number;
+    customerName: string;
+    customerSurname: string;
+    customerPhone: string;
+    startDate: string;
+    endDate: string;
+    techicianId?: number; // attention à l’orthographe du backend
+    technicianName?: string;
+    technicianSurname?: string;
+    serviceDTOS: any[];
+};
+
+type CalendarEvent = {
     id: number;
     title: string;
-    start: string; // format ISO "2025-09-12T09:00:00"
-    end: string;   // format ISO "2025-09-12T10:00:00"
+    start: string;
+    end: string;
 };
 
 const GarageCalendar = () => {
-    const [appointments, setAppointments] = useState<Appointment[]>([
-        {
-            id: 1,
-            title: "Vidange",
-            start: "2025-09-12T09:00:00",
-            end: "2025-09-12T10:00:00",
-        },
-        {
-            id: 2,
-            title: "Révision",
-            start: "2025-09-12T11:00:00",
-            end: "2025-09-12T12:00:00",
-        },
-        {
-            id: 3,
-            title: "Contrôle freins",
-            start: "2025-09-13T14:00:00",
-            end: "2025-09-13T15:00:00",
-        },
-    ]);
+    const data = useLoaderData() as AppointmentResponse[];
 
-    // Quand l’utilisateur clique sur un créneau libre
+    const calendarAppointments = data
+        .filter(a => a.techicianId !== null && a.techicianId !== undefined)
+        .map(a => ({
+            id: a.customerId,
+            title: `${a.customerName} ${a.customerSurname} - Tech: ${a.technicianName}`,
+            start: a.startDate,
+            end: a.endDate,
+        }));
+
+    const unassignedAppointments = data
+        .filter(a => a.techicianId === null || a.techicianId === undefined);
+
     const handleDateClick = (info: any) => {
         alert(`Créneau choisi : ${info.dateStr}`);
     };
 
     return (
         <>
-            <Header />
-        <div style={{maxWidth: 900, margin: "0 auto"}}>
-            <h2 style={{textAlign: "center"}}>Planning du garage</h2>
-            <FullCalendar
-                plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
-                initialView="timeGridWeek"
-                locale="fr"
-                headerToolbar={{
-                    left: "prev,next today",
-                    center: "title",
-                    right: "dayGridMonth,timeGridWeek,timeGridDay",
-                }}
-                events={appointments}
-                dateClick={handleDateClick}
-                height="auto"
-            />
-        </div>
-    <Footer/>
-</>
+            <Header/>
+            <div style={{maxWidth: 900, margin: "0 auto"}}>
+                <h2 style={{textAlign: "center"}}>Planning du garage</h2>
+                <FullCalendar
+                    plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
+                    initialView="timeGridWeek"
+                    locale="fr"
+                    headerToolbar={{
+                        left: "prev,next today",
+                        center: "title",
+                        right: "dayGridMonth,timeGridWeek,timeGridDay",
+                    }}
+                    events={calendarAppointments}
+                    dateClick={handleDateClick}
+                    height="auto"
+                />
+
+                {unassignedAppointments.length > 0 && (
+                    <div style={{marginTop: 20}}>
+                        <h3>Rendez-vous sans technicien assigné</h3>
+                        <ul>
+                            {unassignedAppointments.map(a => (
+                                <li key={a.customerId}>
+                                    {a.customerName} {a.customerSurname} — {a.startDate} à {a.endDate}
+                                </li>
+                            ))}
+                        </ul>
+                    </div>
+                )}
+            </div>
+            <Footer/>
+        </>
     );
 };
 
