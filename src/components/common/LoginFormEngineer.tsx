@@ -3,6 +3,7 @@ import {Alert, Button, Card, CardContent, CardHeader, IconButton, InputAdornment
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Lock from "@mui/icons-material/Lock";
 import { Link as RouterLink } from "react-router";
+import {fetchLog} from "../../api/axiosLog.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -23,8 +24,8 @@ const LoginFormEngineer = () => {
         setLoading(true);
         setError(null);
         try {
-            // TODO: remplace par ton appel API d’authentification
-            // await loginFn(email, password);
+            fetchLog(email, password).then(res => {localStorage.setItem("ac.account",res.token)})
+
             console.log("Login with:", { email, password });
         } catch (err) {
             setError(err instanceof Error ? err.message : "Échec de la connexion");
