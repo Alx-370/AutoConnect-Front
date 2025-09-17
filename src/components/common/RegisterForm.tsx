@@ -1,20 +1,13 @@
 import { useState } from "react";
-import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, Link} from "@mui/material";
+import { Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, Link } from "@mui/material";
 import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import { Link as RouterLink } from "react-router";
 import axios from "axios";
+import { registerUser } from "../../api/axiosLog";
+import type { CustomerRegisterPayload as RegisterPayload } from "../../types/login";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
-const API_BASE = "http://localhost:8080";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-
-type RegisterPayload = {
-    email: string;
-    name: string;
-    surname: string;
-    phone: string;
-    password: string;
-};
 
 type RegisterFormProps = {
     onSuccess?: () => void;
@@ -42,13 +35,7 @@ const RegisterForm = ({ onSuccess, registerFn }: RegisterFormProps) => {
 
     function update<K extends keyof RegisterPayload>(key: K) {
         return (e: React.ChangeEvent<HTMLInputElement>) =>
-            setForm(prev => ({ ...prev, [key]: e.target.value }));
-    }
-
-    async function defaultRegister(data: RegisterPayload) {
-        await axios.post(`${API_BASE}/auth/created`, data, {
-            headers: { "Content-Type": "application/json" },
-        });
+            setForm((prev: RegisterPayload) => ({ ...prev, [key]: e.target.value }));
     }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -58,18 +45,13 @@ const RegisterForm = ({ onSuccess, registerFn }: RegisterFormProps) => {
         setError(null);
         setLoading(true);
         try {
-            if (registerFn) {
-                await registerFn(form);
-            } else {
-                await defaultRegister(form);
-            }
+            const fn = registerFn ?? registerUser;
+            await fn(form);
             onSuccess?.();
         } catch (err: unknown) {
             const msg = axios.isAxiosError(err)
                 ? err.response?.data?.message ??
-                (err.response?.status === 409
-                    ? "Un compte existe déjà avec cet email."
-                    : "Inscription impossible. Réessaie.")
+                (err.response?.status === 409 ? "Un compte existe déjà avec cet email." : "Inscription impossible. Réessaie.")
                 : "Inscription impossible. Réessaie.";
             setError(msg);
         } finally {
@@ -104,20 +86,8 @@ const RegisterForm = ({ onSuccess, registerFn }: RegisterFormProps) => {
                         {error && <Alert severity="error">{error}</Alert>}
 
                         <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                            <TextField
-                                label="Prénom"
-                                value={form.name}
-                                onChange={update("name")}
-                                required
-                                fullWidth
-                            />
-                            <TextField
-                                label="Nom"
-                                value={form.surname}
-                                onChange={update("surname")}
-                                required
-                                fullWidth
-                            />
+                            <TextField label="Prénom" value={form.name} onChange={update("name")} required fullWidth />
+                            <TextField label="Nom" value={form.surname} onChange={update("surname")} required fullWidth />
                         </Stack>
 
                         <TextField
@@ -128,22 +98,10 @@ const RegisterForm = ({ onSuccess, registerFn }: RegisterFormProps) => {
                             autoComplete="tel"
                             required
                             fullWidth
-                            slotProps={{
-                                input: {
-                                    inputProps: { maxLength: 20, inputMode: "tel", pattern: "[0-9+ ]*" },
-                                },
-                            }}
+                            slotProps={{ input: { inputProps: { maxLength: 20, inputMode: "tel", pattern: "[0-9+ ]*" } } }}
                         />
 
-                        <TextField
-                            label="Email"
-                            value={form.email}
-                            onChange={update("email")}
-                            type="email"
-                            autoComplete="email"
-                            required
-                            fullWidth
-                        />
+                        <TextField label="Email" value={form.email} onChange={update("email")} type="email" autoComplete="email" required fullWidth />
 
                         <TextField
                             label="Mot de passe"
@@ -156,12 +114,7 @@ const RegisterForm = ({ onSuccess, registerFn }: RegisterFormProps) => {
                             helperText="6 caractères minimum"
                         />
 
-                        <Button
-                            type="submit"
-                            variant="contained"
-                            disabled={!canSubmit}
-                            sx={{ textTransform: "none", py: 1.1, borderRadius: 2 }}
-                        >
+                        <Button type="submit" variant="contained" disabled={!canSubmit} sx={{ textTransform: "none", py: 1.1, borderRadius: 2 }}>
                             {loading ? "Création..." : "S'inscrire"}
                         </Button>
 

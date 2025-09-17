@@ -6,29 +6,18 @@ import AddCircleOutlineIcon from "@mui/icons-material/AddCircleOutline";
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
 import { Link as RouterLink } from "react-router";
 import axios from "axios";
+import { fetchServices } from "../../api/axiosServices";
+import { registerUser } from "../../api/axiosLog";
+import type { OpeningHours, EngineerRegisterPayload } from "../../types/login";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
-const API_BASE = import.meta.env.VITE_API_BASE;
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const sirenRegex = /^\d{9}$/;
 
 type DayKey = "monday" | "tuesday" | "wednesday" | "thursday" | "friday" | "saturday" | "sunday";
-type DayHours = { open: boolean; start: string; end: string };
-type OpeningHours = Record<DayKey, DayHours>;
 
 type ServiceCatalogItem = { id: number; name: string; description: string };
 type OfferDraft = { serviceId: number | null; price: number | ""; durationMinutes: number | "" };
-
-type RegisterPayload = {
-    email: string;
-    name: string;
-    surname: string;
-    phone: string;
-    password: string;
-    siren: string;
-    openingHours: OpeningHours;
-    services: { serviceId: number; price: number; durationMinutes: number }[];
-};
 
 const DAYS: { key: DayKey; label: string }[] = [
     { key: "monday", label: "Lundi" },
@@ -49,21 +38,6 @@ const defaultHours: OpeningHours = {
     saturday: { open: false, start: "09:00", end: "12:00" },
     sunday: { open: false, start: "09:00", end: "12:00" },
 };
-
-const DEFAULT_CATALOG: ServiceCatalogItem[] = [
-    { id:1,  name:"Vidange + Filtre à Huile", description:"Vidange, filtre, joint, niveaux, reset maintenance." },
-    { id:2,  name:"Pneumatiques", description:"Montage/équilibrage, valves, pressions, TPMS." },
-    { id:3,  name:"Freins", description:"Disques/plaquettes, purge, contrôles, essai." },
-    { id:4,  name:"Batterie", description:"Test capacité/charge, remplacement, BMS." },
-    { id:5,  name:"Distribution", description:"Kit + pompe à eau si prévu, purge LDR." },
-    { id:6,  name:"Amortisseurs", description:"Remplacement AV/AR, couples, géométrie conseillée." },
-    { id:7,  name:"Climatisation", description:"Vide, recharge, traceur UV, perf." },
-    { id:8,  name:"Diagnostic électronique", description:"Codes défauts, mesures, rapport." },
-    { id:9,  name:"Géométrie / Parallélisme", description:"Mesure 3D, réglages, rapport." },
-    { id:10, name:"Filtres air & habitacle", description:"Remplacement + nettoyage logement." },
-    { id:11, name:"Bougies / Préchauffage", description:"Remplacement + contrôles, couples." },
-    { id:12, name:"Embrayage", description:"Kit, purge, contrôle VM, essai." },
-];
 
 function Section({ title, children }: { title: string; children: React.ReactNode }) {
     return (
@@ -96,13 +70,18 @@ const RegisterFormEngineer = () => {
         let mounted = true;
         (async () => {
             try {
-                const { data } = await axios.get<ServiceCatalogItem[]>(`${API_BASE}/services`);
-                if (mounted) setCatalog(Array.isArray(data) ? data : DEFAULT_CATALOG);
+                const data = await fetchServices();
+                if (mounted) setCatalog(Array.isArray(data) ? data : []);
             } catch {
-                if (mounted) setCatalog(DEFAULT_CATALOG);
+                if (mounted) {
+                    setCatalog([]);
+                    setError("Impossible de charger le catalogue des prestations.");
+                }
             }
         })();
-        return () => { mounted = false; };
+        return () => {
+            mounted = false;
+        };
     }, []);
 
     const step1Valid =
@@ -113,11 +92,9 @@ const RegisterFormEngineer = () => {
         form.phone.trim().length >= 6 &&
         sirenRegex.test(form.siren);
 
-    const scheduleValid = Object.values(form.openingHours).every(d =>
-        !d.open || (!!d.start && !!d.end && d.start < d.end)
-    );
+    const scheduleValid = Object.values(form.openingHours).every(d => !d.open || (!!d.start && !!d.end && d.start < d.end));
 
-    const normalizedServices = form.servicesDraft.map((s) => ({
+    const normalizedServices = form.servicesDraft.map(s => ({
         serviceId: s.serviceId ?? NaN,
         price: typeof s.price === "number" ? s.price : s.price === "" ? NaN : Number(s.price),
         durationMinutes:
@@ -128,10 +105,10 @@ const RegisterFormEngineer = () => {
                     : Number(s.durationMinutes),
     }));
 
-    const isRowEmpty = (s: {serviceId:number; price:number; durationMinutes:number}) =>
+    const isRowEmpty = (s: { serviceId: number; price: number; durationMinutes: number }) =>
         !Number.isFinite(s.serviceId) && (isNaN(s.price) || s.price === 0) && (isNaN(s.durationMinutes) || s.durationMinutes === 0);
 
-    const isRowValid = (s: {serviceId:number; price:number; durationMinutes:number}) =>
+    const isRowValid = (s: { serviceId: number; price: number; durationMinutes: number }) =>
         Number.isFinite(s.serviceId) && !isNaN(s.price) && s.price >= 0 && !isNaN(s.durationMinutes) && s.durationMinutes > 0;
 
     const someInvalid = normalizedServices.some(s => !isRowEmpty(s) && !isRowValid(s));
@@ -139,21 +116,43 @@ const RegisterFormEngineer = () => {
 
     const canSubmit = step1Valid && scheduleValid && step3Valid && !loading;
 
-    function update<K extends "email"|"name"|"surname"|"phone"|"password"|"siren">(key: K) {
-        return (e: React.ChangeEvent<HTMLInputElement>) =>
-            setForm(prev => ({ ...prev, [key]: e.target.value }));
-    }
     function toggleDay(day: DayKey, open: boolean) {
-        setForm(prev => ({
-            ...prev,
-            openingHours: { ...prev.openingHours, [day]: { ...prev.openingHours[day], open } },
-        }));
+        setForm(prev => ({ ...prev, openingHours: { ...prev.openingHours, [day]: { ...prev.openingHours[day], open } } }));
     }
     function setDayTime(day: DayKey, field: "start" | "end", value: string) {
+        setForm(prev => ({ ...prev, openingHours: { ...prev.openingHours, [day]: { ...prev.openingHours[day], [field]: value } } }));
+    }
+    function copyMondayToWeekdays() {
+        setForm(prev => {
+            const src = prev.openingHours.monday;
+            const next = { ...prev.openingHours };
+            (["tuesday", "wednesday", "thursday", "friday"] as DayKey[]).forEach(d => (next[d] = { ...src }));
+            return { ...prev, openingHours: next };
+        });
+    }
+    function applyToAllDays() {
+        setForm(prev => {
+            const src = prev.openingHours.monday;
+            const next: OpeningHours = { ...prev.openingHours };
+            (Object.keys(next) as DayKey[]).forEach(d => (next[d] = { ...src }));
+            return { ...prev, openingHours: next };
+        });
+    }
+    function addService() {
         setForm(prev => ({
             ...prev,
-            openingHours: { ...prev.openingHours, [day]: { ...prev.openingHours[day], [field]: value } },
+            servicesDraft: [...prev.servicesDraft, { serviceId: null, price: "", durationMinutes: "" }],
         }));
+    }
+    function removeService(idx: number) {
+        setForm(prev => {
+            const copy = [...prev.servicesDraft];
+            copy.splice(idx, 1);
+            return {
+                ...prev,
+                servicesDraft: copy.length ? copy : [{ serviceId: null, price: "", durationMinutes: "" }],
+            };
+        });
     }
     function setServiceId(idx: number, serviceId: number | null) {
         setForm(prev => {
@@ -162,7 +161,6 @@ const RegisterFormEngineer = () => {
             return { ...prev, servicesDraft: copy };
         });
     }
-
     function updateService(idx: number, field: "price" | "durationMinutes", value: string) {
         const toNumOrEmpty = (v: string): number | "" => {
             if (v === "") return "";
@@ -171,7 +169,7 @@ const RegisterFormEngineer = () => {
         };
         setForm(prev => {
             const copy = [...prev.servicesDraft];
-            const row: OfferDraft = { ...copy[idx] };
+            const row = { ...copy[idx] };
             const parsed = toNumOrEmpty(value);
             if (field === "price") row.price = parsed;
             else row.durationMinutes = parsed;
@@ -179,33 +177,9 @@ const RegisterFormEngineer = () => {
             return { ...prev, servicesDraft: copy };
         });
     }
-
-    function addService() {
-        setForm(prev => ({ ...prev, servicesDraft: [...prev.servicesDraft, { serviceId: null, price: "", durationMinutes: "" }] }));
-    }
-    function removeService(idx: number) {
-        setForm(prev => {
-            const copy = [...prev.servicesDraft];
-            copy.splice(idx, 1);
-            return { ...prev, servicesDraft: copy.length ? copy : [{ serviceId: null, price: "", durationMinutes: "" }] };
-        });
-    }
-
-    function copyMondayToWeekdays() {
-        setForm(prev => {
-            const src = prev.openingHours.monday;
-            const next = { ...prev.openingHours };
-            (["tuesday","wednesday","thursday","friday"] as DayKey[]).forEach(d => next[d] = { ...src });
-            return { ...prev, openingHours: next };
-        });
-    }
-    function applyToAllDays() {
-        setForm(prev => {
-            const src = prev.openingHours.monday;
-            const next: OpeningHours = { ...prev.openingHours };
-            (Object.keys(next) as DayKey[]).forEach(d => next[d] = { ...src });
-            return { ...prev, openingHours: next };
-        });
+    function optionsForRow(currentId: number | null) {
+        const selected = new Set(form.servicesDraft.map(s => s.serviceId).filter(Boolean) as number[]);
+        return catalog.filter(s => !selected.has(s.id) || s.id === currentId);
     }
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -213,7 +187,7 @@ const RegisterFormEngineer = () => {
         if (!canSubmit) return;
 
         const servicesClean = normalizedServices.filter(isRowValid);
-        const payload: RegisterPayload = {
+        const payload: EngineerRegisterPayload = {
             email: form.email,
             name: form.name,
             surname: form.surname,
@@ -221,21 +195,18 @@ const RegisterFormEngineer = () => {
             password: form.password,
             siren: form.siren,
             openingHours: form.openingHours,
-            services: servicesClean as { serviceId:number; price:number; durationMinutes:number }[],
+            services: servicesClean as EngineerRegisterPayload["services"],
         };
 
         setError(null);
         setLoading(true);
         try {
-            await axios.post(`${API_BASE}/auth/created`, payload, {
-                headers: { "Content-Type": "application/json" },
-            });
+            await registerUser(payload);
+
         } catch (err: unknown) {
             const msg = axios.isAxiosError(err)
                 ? err.response?.data?.message ??
-                (err.response?.status === 409
-                    ? "Un compte existe déjà avec cet email."
-                    : "Inscription impossible. Réessaie.")
+                (err.response?.status === 409 ? "Un compte existe déjà avec cet email." : "Inscription impossible. Réessaie.")
                 : "Inscription impossible. Réessaie.";
             setError(msg);
         } finally {
@@ -243,30 +214,12 @@ const RegisterFormEngineer = () => {
         }
     }
 
-    function optionsForRow(currentId: number | null) {
-        const selected = new Set(form.servicesDraft.map(s => s.serviceId).filter(Boolean) as number[]);
-        return catalog.filter(s => !selected.has(s.id) || s.id === currentId);
-    }
-
     return (
-        <Card
-            sx={{
-                width: "100%",
-                maxWidth: 760,
-                mx: "auto",
-                borderRadius: 3,
-                overflow: "hidden",
-                boxShadow: "0 10px 28px rgba(0,0,0,.10)",
-            }}
-        >
+        <Card sx={{ width: "100%", maxWidth: 760, mx: "auto", borderRadius: 3, overflow: "hidden", boxShadow: "0 10px 28px rgba(0,0,0,.10)" }}>
             <CardHeader
                 avatar={<PersonAddAlt1Icon sx={{ color: "white" }} />}
                 title={<Typography variant="h6" fontWeight={800}>Créer un compte garagiste</Typography>}
-                subheader={
-                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,.9)" }}>
-                        Étape {activeStep + 1} sur 3
-                    </Typography>
-                }
+                subheader={<Typography variant="caption" sx={{ color: "rgba(255,255,255,.9)" }}>Étape {activeStep + 1} sur 3</Typography>}
                 sx={{ background: GRADIENT, color: "white", "& .MuiCardHeader-title": { fontWeight: 800 } }}
             />
 
@@ -285,8 +238,8 @@ const RegisterFormEngineer = () => {
                             <Stack spacing={2}>
                                 <Section title="Identité">
                                     <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-                                        <TextField label="Prénom" value={form.name} onChange={update("name")} required fullWidth />
-                                        <TextField label="Nom" value={form.surname} onChange={update("surname")} required fullWidth />
+                                        <TextField label="Prénom" value={form.name} onChange={e => setForm(prev => ({ ...prev, name: e.target.value }))} required fullWidth />
+                                        <TextField label="Nom" value={form.surname} onChange={e => setForm(prev => ({ ...prev, surname: e.target.value }))} required fullWidth />
                                     </Stack>
                                 </Section>
 
@@ -295,21 +248,17 @@ const RegisterFormEngineer = () => {
                                         <TextField
                                             label="Téléphone"
                                             value={form.phone}
-                                            onChange={update("phone")}
+                                            onChange={e => setForm(prev => ({ ...prev, phone: e.target.value }))}
                                             type="tel"
                                             autoComplete="tel"
                                             required
                                             fullWidth
-                                            slotProps={{
-                                                input: {
-                                                    inputProps: { maxLength: 20, inputMode: "tel", pattern: "[0-9+ ]*" }
-                                                }
-                                            }}
+                                            slotProps={{ input: { inputProps: { maxLength: 20, inputMode: "tel", pattern: "[0-9+ ]*" } } }}
                                         />
                                         <TextField
                                             label="Email"
                                             value={form.email}
-                                            onChange={update("email")}
+                                            onChange={e => setForm(prev => ({ ...prev, email: e.target.value }))}
                                             type="email"
                                             autoComplete="email"
                                             required
@@ -322,17 +271,13 @@ const RegisterFormEngineer = () => {
                                     <TextField
                                         label="Mot de passe"
                                         value={form.password}
-                                        onChange={update("password")}
+                                        onChange={e => setForm(prev => ({ ...prev, password: e.target.value }))}
                                         type="password"
                                         autoComplete="new-password"
                                         required
                                         fullWidth
                                         helperText="6 caractères minimum"
-                                        slotProps={{
-                                            input: {
-                                                inputProps: { minLength: 6, maxLength: 120 }
-                                            }
-                                        }}
+                                        slotProps={{ input: { inputProps: { minLength: 6, maxLength: 120 } } }}
                                     />
                                 </Section>
 
@@ -340,7 +285,7 @@ const RegisterFormEngineer = () => {
                                     <TextField
                                         label="SIREN (9 chiffres)"
                                         value={form.siren}
-                                        onChange={update("siren")}
+                                        onChange={e => setForm(prev => ({ ...prev, siren: e.target.value }))}
                                         required
                                         fullWidth
                                         error={form.siren.length > 0 && !sirenRegex.test(form.siren)}
@@ -349,11 +294,7 @@ const RegisterFormEngineer = () => {
                                                 ? "Le SIREN doit contenir exactement 9 chiffres."
                                                 : " "
                                         }
-                                        slotProps={{
-                                            input: {
-                                                inputProps: { maxLength: 9, inputMode: "numeric", pattern: "[0-9]*", autoComplete: "off" }
-                                            }
-                                        }}
+                                        slotProps={{ input: { inputProps: { maxLength: 9, inputMode: "numeric", pattern: "[0-9]*", autoComplete: "off" } } }}
                                     />
                                 </Section>
                             </Stack>
@@ -378,18 +319,11 @@ const RegisterFormEngineer = () => {
 
                                             return (
                                                 <Paper key={key} variant="outlined" sx={{ p: 1.5, borderRadius: 2 }}>
-                                                    <Box
-                                                        sx={{
-                                                            display: "grid",
-                                                            gap: 1,
-                                                            gridTemplateColumns: { xs: "1fr", sm: "1.2fr 1fr 1fr" },
-                                                        }}
-                                                    >
+                                                    <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: { xs: "1fr", sm: "1.2fr 1fr 1fr" } }}>
                                                         <FormControlLabel
                                                             control={<Switch checked={d.open} onChange={(_, v) => toggleDay(key, v)} />}
                                                             label={<Typography fontWeight={600}>{label}</Typography>}
                                                         />
-
                                                         <TextField
                                                             type="time"
                                                             label="Ouverture"
@@ -431,6 +365,12 @@ const RegisterFormEngineer = () => {
                                         Sélectionne dans le catalogue puis indique le prix (€) et la durée (min).
                                     </Typography>
 
+                                    {catalog.length === 0 && (
+                                        <Alert severity="info">
+                                            Aucun élément de catalogue récupéré. Vérifie l’endpoint <code>/services</code> et les données en base.
+                                        </Alert>
+                                    )}
+
                                     <Stack spacing={1.25}>
                                         {form.servicesDraft.map((row, idx) => {
                                             const options = optionsForRow(row.serviceId);
@@ -455,13 +395,7 @@ const RegisterFormEngineer = () => {
                                                         </IconButton>
                                                     </Stack>
 
-                                                    <Box
-                                                        sx={{
-                                                            display: "grid",
-                                                            gap: 1,
-                                                            gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr 1fr" },
-                                                        }}
-                                                    >
+                                                    <Box sx={{ display: "grid", gap: 1, gridTemplateColumns: { xs: "1fr", sm: "2fr 1fr 1fr" } }}>
                                                         <Autocomplete<ServiceCatalogItem, false, false, false>
                                                             options={options}
                                                             getOptionLabel={(o) => o.name}
@@ -497,7 +431,7 @@ const RegisterFormEngineer = () => {
                                                             fullWidth
                                                             slotProps={{ input: { inputProps: { step: "5", min: "1" } } }}
                                                             error={invalid && (isNaN(dur) || dur <= 0)}
-                                                            helperText={invalid ? "Choisis une prestation + prix >= 0 + durée > 0" : " "}
+                                                            helperText={invalid ? "Choisis une prestation + prix ≥ 0 + durée > 0" : " "}
                                                         />
                                                     </Box>
                                                 </Paper>
@@ -510,7 +444,10 @@ const RegisterFormEngineer = () => {
                                             startIcon={<AddCircleOutlineIcon />}
                                             onClick={addService}
                                             sx={{ alignSelf: { xs: "stretch", sm: "flex-start" }, textTransform: "none" }}
-                                            disabled={catalog.length > 0 && form.servicesDraft.filter(s => s.serviceId != null).length >= catalog.length}
+                                            disabled={
+                                                catalog.length === 0 ||
+                                                (catalog.length > 0 && form.servicesDraft.filter(s => s.serviceId != null).length >= catalog.length)
+                                            }
                                         >
                                             Ajouter une prestation
                                         </Button>
@@ -542,12 +479,7 @@ const RegisterFormEngineer = () => {
                                     Continuer
                                 </Button>
                             ) : (
-                                <Button
-                                    type="submit"
-                                    variant="contained"
-                                    disabled={!canSubmit}
-                                    sx={{ textTransform: "none" }}
-                                >
+                                <Button type="submit" variant="contained" disabled={!canSubmit} sx={{ textTransform: "none" }}>
                                     {loading ? "Création..." : "Créer mon compte"}
                                 </Button>
                             )}

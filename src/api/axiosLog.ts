@@ -1,5 +1,5 @@
 import axios from "axios";
-import type { Login } from "../types/login.ts";
+import type {Login, RegisterPayload} from "../types/login.ts";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -8,6 +8,12 @@ export async function fetchLog(email : string, password : string): Promise<Login
     const payload = { email, password };
     const { data } = await axios.post<Login>(`${API_BASE}/auth/login`, payload);
     return data;
+}
+
+export async function registerUser(payload: RegisterPayload): Promise<void> {
+    await axios.post(`${API_BASE}/auth/created`, payload, {
+        headers: { "Content-Type": "application/json" },
+    });
 }
 
 
