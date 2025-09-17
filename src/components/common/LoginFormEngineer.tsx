@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import {Alert, Button, Card, CardContent, CardHeader, IconButton, InputAdornment, Link, Stack, TextField, Typography,} from "@mui/material";
 import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Lock from "@mui/icons-material/Lock";
-import { Link as RouterLink } from "react-router";
+import {Link as RouterLink, useNavigate} from "react-router";
 import {fetchLog} from "../../api/axiosLog.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
@@ -14,6 +14,7 @@ const LoginFormEngineer = () => {
     const [showPwd, setShowPwd] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
+    const navigate = useNavigate();
 
     const canSubmit = emailRegex.test(email) && password.length >= 4 && !loading;
 
@@ -27,6 +28,7 @@ const LoginFormEngineer = () => {
             fetchLog(email, password).then(res => {localStorage.setItem("ac.account",res.token)})
 
             console.log("Login with:", { email, password });
+            navigate("/dashboard-engineer", { replace: true });
         } catch (err) {
             setError(err instanceof Error ? err.message : "Échec de la connexion");
         } finally {
