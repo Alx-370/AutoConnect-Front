@@ -18,7 +18,6 @@ const PrestationListContainer = ({ selectedIds, onToggleId }: Props) => {
     useEffect(() => {
         fetchServices()
             .then((data) => {
-                console.log("[fetchServices] payload:", data);
                 setItems(data);
             })
             .catch((e: unknown) =>
