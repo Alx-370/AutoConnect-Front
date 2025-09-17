@@ -3,8 +3,11 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Footer from "../C_footer/Footer";
-import Header from "../A_header/Header";
 import {useLoaderData} from "react-router";
+import HeaderWithLogout from "../A_header/HeaderWithLogout.tsx";
+import NavbarEngineer from "../../components/common/NavbarEngineer.tsx";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
+import {Container} from "@mui/material";
 
 type AppointmentResponse = {
     customerId: number;
@@ -47,7 +50,10 @@ const GarageCalendar = () => {
 
     return (
         <>
-            <Header/>
+            <HeaderWithLogout/>
+            <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
+            <NavbarEngineer />
+            <Container>
             <div style={{maxWidth: 900, margin: "0 auto"}}>
                 <h2 style={{textAlign: "center"}}>Planning du garage</h2>
                 <FullCalendar
@@ -77,6 +83,7 @@ const GarageCalendar = () => {
                     </div>
                 )}
             </div>
+            </Container>
             <Footer/>
         </>
     );
