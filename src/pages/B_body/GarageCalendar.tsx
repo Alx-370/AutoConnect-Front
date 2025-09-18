@@ -4,8 +4,8 @@ import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import Footer from "../C_footer/Footer";
-import Header from "../A_header/Header";
 import {useLoaderData} from "react-router";
+
 import {
     Box,
     Typography,
@@ -19,6 +19,12 @@ import {
     DialogContent,
     DialogActions
 } from "@mui/material";
+
+import HeaderWithLogout from "../A_header/HeaderWithLogout.tsx";
+import NavbarEngineer from "../../components/common/NavbarEngineer.tsx";
+import HeroTitle from "../../components/common/HeroTitle.tsx";
+import {Container} from "@mui/material";
+
 
 type AppointmentResponse = {
     customerId: number;
@@ -135,11 +141,20 @@ const GarageCalendar = () => {
 
     return (
         <>
+
             <Header/>
             <Box maxWidth={900} mx="auto">
                 <Typography variant="h5" textAlign="center" mt={2}>
                     Planning du garage
                 </Typography>
+
+
+            <HeaderWithLogout/>
+            <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
+            <NavbarEngineer />
+            <Container>
+            <div style={{maxWidth: 900, margin: "0 auto"}}>
+                <h2 style={{textAlign: "center"}}>Planning du garage</h2>
 
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -207,6 +222,7 @@ const GarageCalendar = () => {
                         </Stack>
                     </Box>
                 )}
+
             </Box>
 
             <Dialog open={!!selectedEvent} onClose={() => setSelectedEvent(null)}>
@@ -266,6 +282,10 @@ const GarageCalendar = () => {
                     <Button variant="contained" onClick={handleUpdateTech}>Mettre à jour</Button>
                 </DialogActions>
             </Dialog>
+
+
+            </div>
+            </Container>
 
             <Footer/>
         </>
