@@ -12,6 +12,7 @@ import {createBrowserRouter, redirect} from "react-router";
 import { getUserRole } from "../protectedRoute/jwtDecode";
 import {postAxiosGarageCalendar} from "../api/axiosGarageCalendar.ts";
 import DashboardEngineer from "../pages/B_body/DashboardEngineer.tsx";
+import {requireEngineer} from "../protectedRoute/authLoaders.ts";
 
 
 const garageCalendarLoader = async () => {
@@ -69,10 +70,9 @@ const router = createBrowserRouter([
         element: <GarageCalendar/>,
         loader: garageCalendarLoader
     },
-    {
-        path : "/dashboard-engineer",
-        element: <DashboardEngineer/>
-    },
+
+    { path: "/dashboard-engineer", element: <DashboardEngineer />, loader: requireEngineer },
+
 ]);
 
 export default router;

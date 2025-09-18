@@ -4,6 +4,8 @@ import { Visibility, VisibilityOff } from "@mui/icons-material";
 import Lock from "@mui/icons-material/Lock";
 import {Link as RouterLink, useNavigate} from "react-router";
 import {fetchLog} from "../../api/axiosLog.ts";
+import {getUserRole} from "../../protectedRoute/jwtDecode.ts";
+import axios from "axios";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -24,13 +26,25 @@ const LoginFormEngineer = () => {
 
         setLoading(true);
         setError(null);
-        try {
-            fetchLog(email, password).then(res => {localStorage.setItem("ac.account",res.token)})
 
-            console.log("Login with:", { email, password });
+        try {
+
+            const res = await fetchLog(email, password);
+            localStorage.setItem("ac.account", res.token);
+
+            const role = getUserRole();
+            if (role !== "ENGINEER") {
+                localStorage.removeItem("ac.account");
+                setError("Accès réservé aux garagistes.");
+                return;
+            }
+
             navigate("/dashboard-engineer", { replace: true });
-        } catch (err) {
-            setError(err instanceof Error ? err.message : "Échec de la connexion");
+        } catch (err: unknown) {
+            const msg = axios.isAxiosError(err)
+                ? err.response?.data?.message ?? "Identifiants invalides."
+                : "Échec de la connexion.";
+            setError(msg);
         } finally {
             setLoading(false);
         }

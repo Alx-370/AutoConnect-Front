@@ -1,4 +1,4 @@
-import type {Geoloc} from "../types/geoloc.ts";
+
 import axios from "axios";
 import type {AppointmentList} from "../types/ApointmentList.ts";
 
