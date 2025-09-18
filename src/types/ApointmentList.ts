@@ -10,7 +10,7 @@ export type AppointmentList = {
     customerName: string;
     customerSurname: string;
     customerPhone: string;
-    techicianId: number;         // ⚠️ probable faute -> "technicianId"
+    techicianId: number;
     technicianName: string;
     technicianSurname: string;
 };
