@@ -22,3 +22,11 @@ export type CarSearchProps = {
 /*
 export type CarDetailProps = {}
 */
+
+export type CarDetail = {
+    immat: string;
+    km: string;
+    make: string;
+    model: string;
+    year: number;
+}

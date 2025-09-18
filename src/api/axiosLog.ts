@@ -1,5 +1,6 @@
 import axios from "axios";
 import type {Login, RegisterPayload} from "../types/login.ts";
+import type {CarDetail} from "../types/car.ts";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -28,3 +29,13 @@ export async function postAppointment(tokenLocal: string, id:number, startDate: 
     return data
 }
 
+export async function postCar(tokenLocal: string, immat:string, km: string,make: string, model: string, year: number): Promise<CarDetail> {
+    const payload = { immat: immat, km: km, make: make, model: model, year: year };
+    const { data } = await axios.post<CarDetail>(`${API_BASE}/car`, payload, {
+        headers: {
+            Authorization: `Bearer ${tokenLocal}`,
+        },
+    });
+
+    return  data
+}
