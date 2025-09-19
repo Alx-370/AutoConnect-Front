@@ -33,7 +33,6 @@ const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
     const [showPwd, setShowPwd] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [tokenlocal, setTokenLocal] = useState<string>();
     const [itemLocalStorage, setItemLocalStorage] = useState<LoginFormState>();
 
     const canSubmit = emailRegex.test(email) && password.length >= 4 && !loading;
@@ -74,7 +73,6 @@ const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
     }
 
     async function sendAppointmentAfterLogin(): Promise<void> {
-        /*const body = buildAppointmentBodyFromLS();*/
 
         const selection = localStorage.getItem("ac.selection");
         const account = localStorage.getItem("ac.account");
@@ -95,8 +93,8 @@ const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
             console.log(startDate);
 
 
-            postAppointment(account, id, startDate, endDate, services, carId)
-            postCar(account, immat, km, make, model, year)
+            await postAppointment(account, id, startDate, endDate, services, carId)
+            await postCar(account, immat, km, make, model, year)
         }
 
     }
