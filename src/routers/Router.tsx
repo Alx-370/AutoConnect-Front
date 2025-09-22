@@ -13,6 +13,7 @@ import { getUserRole } from "../protectedRoute/jwtDecode";
 import {postAxiosGarageCalendar} from "../api/axiosGarageCalendar.ts";
 import DashboardEngineer from "../pages/B_body/DashboardEngineer.tsx";
 import {requireEngineer} from "../protectedRoute/authLoaders.ts";
+import ManagementEngineer from "../pages/B_body/ManagementEngineer.tsx";
 
 
 const garageCalendarLoader = async () => {
@@ -72,6 +73,8 @@ const router = createBrowserRouter([
     },
 
     { path: "/dashboard-engineer", element: <DashboardEngineer />, loader: requireEngineer },
+
+    { path: "/management-engineer", element: <ManagementEngineer/>, loader: requireEngineer }
 
 ]);
 

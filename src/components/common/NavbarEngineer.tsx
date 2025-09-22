@@ -69,9 +69,9 @@ const NavbarEngineer = () => {
 
                             <Button
                                 component={RouterLink}
-                                to="/engineer/gestion"
+                                to="/management-engineer"
                                 startIcon={<SettingsIcon fontSize="small" />}
-                                variant={isActive("/engineer/gestion") ? "contained" : "text"}
+                                variant={isActive("/management-engineer") ? "contained" : "text"}
                                 size="small"
                                 sx={{
                                     textTransform: "none",
