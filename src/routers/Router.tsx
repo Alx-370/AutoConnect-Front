@@ -15,6 +15,8 @@ import DashboardEngineer from "../pages/B_body/DashboardEngineer.tsx";
 import {requireEngineer} from "../protectedRoute/authLoaders.ts";
 import ManagementEngineer from "../pages/B_body/ManagementEngineer.tsx";
 import ConfirmationAppointment from "../pages/B_body/ConfirmationAppointment.tsx";
+import LoginUserViaHeader from "../pages/B_body/LoginUserViaHeader.tsx";
+import RegisterUserViaHeader from "../pages/B_body/RegisterUserViaHeader.tsx";
 
 
 const garageCalendarLoader = async () => {
@@ -84,7 +86,11 @@ const router = createBrowserRouter([
 
     { path: "/management-engineer", element: <ManagementEngineer/>, loader: requireEngineer },
 
-    { path: "/confirmation-appointment", element: <ConfirmationAppointment/>}
+    { path: "/confirmation-appointment", element: <ConfirmationAppointment/> },
+
+    { path: "/login-user-customer", element: <LoginUserViaHeader/> },
+
+    { path: "/register-user-customer", element: <RegisterUserViaHeader/> }
 
 ]);
 
