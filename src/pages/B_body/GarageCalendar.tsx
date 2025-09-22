@@ -297,6 +297,7 @@ const GarageCalendar = () => {
                                 {selectedEvent.techName ? `${selectedEvent.techName} ${selectedEvent.techSurname}` : "Non assigné"}
                             </Typography>
 
+
                             <Select
                                 size="small"
                                 displayEmpty
