@@ -60,10 +60,7 @@ const Dashboard = () => {
         <>
             <Header />
             <Box sx={{display: "flex", flexDirection: "column", alignItems: "center"}}>
-            <HeroTitle
-                title="AutoConnect"
-                sx={{ mt: 3 }}
-            />
+            <HeroTitle title="AutoConnect" sx={{ mt: 3 }}/>
 
                 <p style={{ padding: 16, display: "flex", justifyContent: "center", alignItems: "center" }}>
                     La tranquillité commence ici : comparez les meilleurs garages de votre région et optez
@@ -80,6 +77,13 @@ const Dashboard = () => {
                     onChangeCar={setCarSel}
                 />
 
+
+
+                <PrestationListContainer
+                    selectedIds={selectedServiceIds}
+                    onToggleId={toggleService}
+                />
+
                 <div style={{ display: "flex", justifyContent: "center", alignItems: "center" }}>
                     <Button
                         onClick={handleSaveInLocalStorage}
@@ -87,14 +91,9 @@ const Dashboard = () => {
                         disabled={!canContinue}
                         sx={{ mt: 2, px: 3, py: 1, borderRadius: 2, textTransform: "none", boxShadow: 2 }}
                     >
-                        Enregistrer mes informations
+                        Voir les garages autour de moi
                     </Button>
                 </div>
-
-                <PrestationListContainer
-                    selectedIds={selectedServiceIds}
-                    onToggleId={toggleService}
-                />
             </Box>
             <Footer />
         </>

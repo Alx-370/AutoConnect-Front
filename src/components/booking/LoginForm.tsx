@@ -1,8 +1,20 @@
 import {useEffect, useState} from "react";
-import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment, Link} from "@mui/material";
-import { Visibility, VisibilityOff, Lock } from "@mui/icons-material";
-import { Link as RouterLink } from "react-router";
-import {fetchLog, postAppointment} from "../../api/axiosLog.ts";
+import {
+    Card,
+    CardHeader,
+    CardContent,
+    Stack,
+    TextField,
+    Button,
+    Typography,
+    Alert,
+    IconButton,
+    InputAdornment,
+    Link
+} from "@mui/material";
+import {Visibility, VisibilityOff, Lock} from "@mui/icons-material";
+import {Link as RouterLink} from "react-router";
+import {fetchLog, postAppointment, postCar} from "../../api/axiosLog.ts";
 import type {LoginFormState} from "../../types/login.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
@@ -15,13 +27,13 @@ type LoginFormProps = {
 };
 
 
-const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
+const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [showPwd, setShowPwd] = useState<boolean>(false);
     const [loading, setLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
-    const [tokenlocal , setTokenLocal] = useState<string>();
+    const [tokenlocal, setTokenLocal] = useState<string>();
     const [itemLocalStorage, setItemLocalStorage] = useState<LoginFormState>();
 
     const canSubmit = emailRegex.test(email) && password.length >= 4 && !loading;
@@ -29,13 +41,13 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
     useEffect(() => {
         const saved = localStorage.getItem("ac.selection");
         if (saved) {
-            const parsed = JSON.parse(saved);
-            setItemLocalStorage(parsed);
-            console.log(itemLocalStorage);
+            try {
+                setItemLocalStorage(JSON.parse(saved) as LoginFormState);
+            } catch {
 
+            }
         }
     }, []);
-
 
 
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
@@ -48,10 +60,8 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
             if (loginFn) {
                 await loginFn(email, password);
             } else {
-
-                await fetchLog(email, password)
-                    .then(data => {setTokenLocal(data.token);
-                        localStorage.setItem("ac.account", JSON.stringify(tokenlocal));});
+                const { token } = await fetchLog(email, password);
+                localStorage.setItem("ac.account", token);
             }
 
             await sendAppointmentAfterLogin();
@@ -76,13 +86,17 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
             const endDate = appointment.end;
             const services = parsed.services;
             const carId = 1;
+            const immat = parsed.immat;
+            const km = parsed.km;
+            const make = parsed.make;
+            const model = parsed.model;
+            const year = parsed.year;
 
-            const accountparsed = JSON.parse(account);
-            const token = accountparsed;
             console.log(startDate);
 
 
-            postAppointment(token, id,startDate ,endDate ,services, carId)
+            postAppointment(account, id, startDate, endDate, services, carId)
+            postCar(account, immat, km, make, model, year)
         }
 
     }
@@ -98,17 +112,17 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
             }}
         >
             <CardHeader
-                avatar={<Lock sx={{ color: "white" }} />}
+                avatar={<Lock sx={{color: "white"}}/>}
                 title={<Typography variant="h6" fontWeight={800}>Connexion</Typography>}
                 subheader={
-                    <Typography variant="caption" sx={{ color: "rgba(255,255,255,.9)" }}>
+                    <Typography variant="caption" sx={{color: "rgba(255,255,255,.9)"}}>
                         Connectez-vous pour finaliser votre rendez-vous
                     </Typography>
                 }
-                sx={{ background: GRADIENT, color: "white", "& .MuiCardHeader-title": { fontWeight: 800 } }}
+                sx={{background: GRADIENT, color: "white", "& .MuiCardHeader-title": {fontWeight: 800}}}
             />
 
-            <CardContent sx={{ p: 3 }}>
+            <CardContent sx={{p: 3}}>
                 <form onSubmit={handleSubmit} noValidate>
                     <Stack spacing={2}>
                         {error && <Alert severity="error">{error}</Alert>}
@@ -121,7 +135,7 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                             autoComplete="email"
                             required
                             fullWidth
-                            slotProps={{ input: { inputProps: { maxLength: 120 } } }}
+                            slotProps={{input: {inputProps: {maxLength: 120}}}}
                         />
 
                         <TextField
@@ -141,11 +155,11 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                                                 onClick={() => setShowPwd((v) => !v)}
                                                 edge="end"
                                             >
-                                                {showPwd ? <VisibilityOff /> : <Visibility />}
+                                                {showPwd ? <VisibilityOff/> : <Visibility/>}
                                             </IconButton>
                                         </InputAdornment>
                                     ),
-                                    inputProps: { minLength: 4, maxLength: 120 },
+                                    inputProps: {minLength: 4, maxLength: 120},
                                 },
                             }}
                         />
@@ -154,12 +168,12 @@ const LoginForm = ({ onSuccess, loginFn }: LoginFormProps) => {
                             type="submit"
                             variant="contained"
                             disabled={!canSubmit}
-                            sx={{ textTransform: "none", py: 1.1, borderRadius: 2 }}
+                            sx={{textTransform: "none", py: 1.1, borderRadius: 2}}
                         >
                             {loading ? "Connexion..." : "Se connecter"}
                         </Button>
 
-                        <Typography variant="body2" sx={{ textAlign: "center", opacity: 0.85 }}>
+                        <Typography variant="body2" sx={{textAlign: "center", opacity: 0.85}}>
                             Pas de compte ?{" "}
                             <Link component={RouterLink} to="/register-user" underline="hover">
                                 Créer un compte

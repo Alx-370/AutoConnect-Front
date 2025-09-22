@@ -1,10 +1,10 @@
 import axios from "axios";
 import type { PrestationItem as Prestation } from "../types/prestation-item.ts";
 
-
 const API_BASE = import.meta.env.VITE_API_BASE;
 
 export async function fetchServices(): Promise<Prestation[]> {
     const { data } = await axios.get<Prestation[]>(`${API_BASE}/services`);
+    console.log(data);
     return data;
 }

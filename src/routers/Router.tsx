@@ -1,22 +1,85 @@
-import {Route, Routes} from "react-router";
 import Dashboard from "../pages/B_body/Dashboard";
-import SearchGarage from "../pages/B_body/SearchGarage.tsx";
-import SearchAppointmentGarage from "../pages/B_body/SearchAppointmentGarage.tsx";
-import LoginUser from "../pages/B_body/LoginUser.tsx";
-import RegisterUser from "../pages/B_body/RegisterUser.tsx";
+import SearchGarage from "../pages/B_body/SearchGarage";
+import SearchAppointmentGarage from "../pages/B_body/SearchAppointmentGarage";
+import LoginUser from "../pages/B_body/LoginUser";
+import RegisterUser from "../pages/B_body/RegisterUser";
+import GarageCalendar from "../pages/B_body/GarageCalendar";
+import LoginEngineerViaHeader from "../pages/B_body/LoginEngineerViaHeader";
+import RegisterEngineerViaHeader from "../pages/B_body/RegisterEngineerViaHeader";
 
 
+import {createBrowserRouter, redirect} from "react-router";
+import { getUserRole } from "../protectedRoute/jwtDecode";
+import {getAxiosGarageCalendarTech, postAxiosGarageCalendar} from "../api/axiosGarageCalendar.ts";
+import DashboardEngineer from "../pages/B_body/DashboardEngineer.tsx";
+import {requireEngineer} from "../protectedRoute/authLoaders.ts";
 
-const Router = () => {
-    return (
-        <Routes>
-                <Route path="/" element={<Dashboard />} />
-                <Route path="/search-garage" element={<SearchGarage/>}/>
-                <Route path="/search-appointment-garage" element={<SearchAppointmentGarage/>}/>
-                <Route path="/login-user" element={<LoginUser/>}/>
-                <Route path="/register-user" element={<RegisterUser/>}/>
-        </Routes>
-    );
+
+const garageCalendarLoader = async () => {
+    const token = localStorage.getItem("ac.account");
+    if (!token) return redirect("/login-user");
+
+    const role = getUserRole();
+    if (role !== "ENGINEER") {
+        console.log("role", role);
+        return redirect("/");
+    }
+
+    try {
+        const response = await postAxiosGarageCalendar(token);
+        const techniciansRes = await getAxiosGarageCalendarTech(token);
+
+        console.log(response);
+        return {
+            appointments: response,
+            technicians: techniciansRes,
+        };
+    } catch (error : any) {
+        console.error("Erreur lors du fetch du calendrier :", error);
+        return {
+            appointments:[],
+            technicians: [],
+        };
+    }
 };
 
-export default  Router
+
+const router = createBrowserRouter([
+    {
+        path: "/",
+        element: <Dashboard/>
+    },
+    {
+        path: "/search-garage",
+        element: <SearchGarage/>
+    },
+    {
+        path: "/search-appointment-garage",
+        element: <SearchAppointmentGarage/>
+    },
+    {
+        path: "/login-user",
+        element: <LoginUser/>
+    },
+    {
+        path: "/register-user",
+        element: <RegisterUser/>},
+    {
+        path: "/login-user-engineer",
+        element: <LoginEngineerViaHeader/>
+    },
+    {
+        path: "/register-user-engineer",
+        element: <RegisterEngineerViaHeader/>
+    },
+    {
+        path: "/garage-calendar",
+        element: <GarageCalendar/>,
+        loader: garageCalendarLoader
+    },
+
+    { path: "/dashboard-engineer", element: <DashboardEngineer />, loader: requireEngineer },
+
+]);
+
+export default router;

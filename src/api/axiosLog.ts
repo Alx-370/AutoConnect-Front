@@ -1,5 +1,6 @@
 import axios from "axios";
-import type { Login } from "../types/login.ts";
+import type {Login, RegisterPayload} from "../types/login.ts";
+import type {CarDetail} from "../types/car.ts";
 
 const API_BASE = import.meta.env.VITE_API_BASE;
 
@@ -10,11 +11,17 @@ export async function fetchLog(email : string, password : string): Promise<Login
     return data;
 }
 
+export async function registerUser(payload: RegisterPayload): Promise<void> {
+    await axios.post(`${API_BASE}/auth/created`, payload, {
+        headers: { "Content-Type": "application/json" },
+    });
+}
+
 
 export async function postAppointment(tokenLocal: string, id:number, startDate: string, endDate: string, services: number[], carId: number): Promise<Login> {
     console.log(services);
     const payload = { garageId: id, carID: carId, startDate: startDate, endDate: endDate, serviceId: services };
-    const { data } = await axios.post<Login>(`${API_BASE}/appointements`, payload, {
+    const { data } = await axios.post<Login>(`${API_BASE}/appointments`, payload, {
         headers: {
             Authorization: `Bearer ${tokenLocal}`,
         },
@@ -22,3 +29,13 @@ export async function postAppointment(tokenLocal: string, id:number, startDate: 
     return data
 }
 
+export async function postCar(tokenLocal: string, immat:string, km: string,make: string, model: string, year: number): Promise<CarDetail> {
+    const payload = { immat: immat, km: km, make: make, model: model, year: year };
+    const { data } = await axios.post<CarDetail>(`${API_BASE}/car`, payload, {
+        headers: {
+            Authorization: `Bearer ${tokenLocal}`,
+        },
+    });
+
+    return  data
+}

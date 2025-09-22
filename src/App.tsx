@@ -1,5 +1,6 @@
+import { RouterProvider } from 'react-router';
 import './App.css'
-import Router from "./routers/Router.tsx";
+import router from "./routers/Router.tsx";
 
 
 
@@ -7,7 +8,7 @@ import Router from "./routers/Router.tsx";
 const App =() => {
   return (
     <>
-        <Router/>
+        <RouterProvider router={router}/>
     </>
   )
 }
