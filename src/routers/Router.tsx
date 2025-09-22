@@ -10,7 +10,7 @@ import RegisterEngineerViaHeader from "../pages/B_body/RegisterEngineerViaHeader
 
 import {createBrowserRouter, redirect} from "react-router";
 import { getUserRole } from "../protectedRoute/jwtDecode";
-import {postAxiosGarageCalendar} from "../api/axiosGarageCalendar.ts";
+import {getAxiosGarageCalendarTech, postAxiosGarageCalendar} from "../api/axiosGarageCalendar.ts";
 import DashboardEngineer from "../pages/B_body/DashboardEngineer.tsx";
 import {requireEngineer} from "../protectedRoute/authLoaders.ts";
 import ManagementEngineer from "../pages/B_body/ManagementEngineer.tsx";
@@ -28,12 +28,19 @@ const garageCalendarLoader = async () => {
 
     try {
         const response = await postAxiosGarageCalendar(token);
+        const techniciansRes = await getAxiosGarageCalendarTech(token);
+
         console.log(response);
-        return response;
+        return {
+            appointments: response,
+            technicians: techniciansRes,
+        };
     } catch (error : any) {
         console.error("Erreur lors du fetch du calendrier :", error);
-        // Retourne un tableau vide pour éviter que le composant plante
-        return [];
+        return {
+            appointments:[],
+            technicians: [],
+        };
     }
 };
 
