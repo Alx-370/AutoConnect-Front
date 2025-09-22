@@ -10,8 +10,8 @@ import HeroTitle from "../../components/common/HeroTitle.tsx";
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-// chemin si tu veux rediriger ailleurs
-const REDIRECT_AFTER_LOGIN = "/confirmation-appointment";
+
+const REDIRECT_AFTER_LOGIN = "/dashboard-customer";
 
 const LoginUserViaHeader = () => {
     const navigate = useNavigate();
