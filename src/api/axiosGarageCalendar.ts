@@ -16,13 +16,14 @@ export async function postAxiosGarageCalendar(tokenLocal: string): Promise<Appoi
 
 }
 
-export async function pustAxiosGarageCalendarSetTech(tokenLocal: string): Promise<AppointmentList[]> {
-    const {data} = await axios.get<AppointmentList[]>(`${API_BASE}/engineers/all-Apointment-Garage`, {
+
+
+export async function getAxiosGarageCalendarTech(tokenLocal: string): Promise<AppointmentList[]> {
+    const {data} = await axios.get<AppointmentList[]>(`${API_BASE}/engineers/get-tech`, {
         headers: {
             Authorization: `Bearer ${tokenLocal}`,
         },
     });
-
 
     return data;
 
