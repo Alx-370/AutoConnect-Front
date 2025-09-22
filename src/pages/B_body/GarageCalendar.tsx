@@ -130,6 +130,7 @@ const GarageCalendar = () => {
         setUnassignedAppointments((prev) => prev.filter((a) => a.customerId !== appointmentId));
     };
 
+
     const handleEventClick = (clickInfo: EventClickArg) => {
         const ev = clickInfo.event;
         const ext = ev.extendedProps as {
