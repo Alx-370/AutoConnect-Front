@@ -9,7 +9,7 @@ import { useNavigate, useLocation } from "react-router";
 const LoginUser = () => {
     const navigate = useNavigate();
     const location = useLocation() as { state?: { from?: string } };
-    const from = location.state?.from ?? "/";
+    const from = location.state?.from ?? "/confirmation-appointment";
 
     return (
         <>

@@ -1,33 +1,37 @@
 import {useEffect, useState} from "react";
-import {
-    Card,
-    CardHeader,
-    CardContent,
-    Stack,
-    TextField,
-    Button,
-    Typography,
-    Alert,
-    IconButton,
-    InputAdornment,
-    Link
-} from "@mui/material";
+import {Card, CardHeader, CardContent, Stack, TextField, Button, Typography, Alert, IconButton, InputAdornment, Link} from "@mui/material";
 import {Visibility, VisibilityOff, Lock} from "@mui/icons-material";
-import {Link as RouterLink} from "react-router";
+import {Link as RouterLink, useNavigate} from "react-router";
 import {fetchLog, postAppointment, postCar} from "../../api/axiosLog.ts";
 import type {LoginFormState} from "../../types/login.ts";
 
 const GRADIENT = "linear-gradient(90deg,#1976d2,#2196f3)";
 const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+const CONFIRM_PATH = "/confirmation-appointment";
 
 type LoginFormProps = {
     onSuccess?: () => void;
     loginFn?: (email: string, password: string) => Promise<void>;
 };
 
+type ConfirmationPayload = {
+    start?: string;
+    end?: string;
+    id?: number;
+    name?: string;
+    codePostal?: string;
+    libelleCommune?: string;
+    immat?: string;
+    make?: string;
+    model?: string;
+    year?: number;
+    services?: number[];
+};
 
 const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
+    const navigate = useNavigate();
+
     const [email, setEmail] = useState<string>("");
     const [password, setPassword] = useState<string>("");
     const [showPwd, setShowPwd] = useState<boolean>(false);
@@ -48,7 +52,6 @@ const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
         }
     }, []);
 
-
     async function handleSubmit(e: React.FormEvent<HTMLFormElement>) {
         e.preventDefault();
         if (!canSubmit) return;
@@ -63,8 +66,12 @@ const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
                 localStorage.setItem("ac.account", token);
             }
 
-            await sendAppointmentAfterLogin();
+            const confirmation = await sendAppointmentAfterLogin();
+
+
+            navigate(CONFIRM_PATH, { replace: true, state: { confirmation } });
             onSuccess?.();
+
         } catch {
             setError("Identifiants incorrects ou service indisponible.");
         } finally {
@@ -72,31 +79,50 @@ const LoginForm = ({onSuccess, loginFn}: LoginFormProps) => {
         }
     }
 
-    async function sendAppointmentAfterLogin(): Promise<void> {
-
+    async function sendAppointmentAfterLogin(): Promise<ConfirmationPayload | null> {
         const selection = localStorage.getItem("ac.selection");
         const account = localStorage.getItem("ac.account");
-        if (selection && account) {
-            const parsed = JSON.parse(selection);
-            const id = parsed.id;
-            const appointment = parsed.appointment;
-            const startDate = appointment.start;
-            const endDate = appointment.end;
-            const services = parsed.services;
-            const carId = 1;
-            const immat = parsed.immat;
-            const km = parsed.km;
-            const make = parsed.make;
-            const model = parsed.model;
-            const year = parsed.year;
+        if (!selection || !account) return null;
 
-            console.log(startDate);
+        const parsed = JSON.parse(selection);
+        const id = parsed.id as number;
+        const appointment = parsed.appointment;
+        const startDate = appointment?.start as string;
+        const endDate = appointment?.end as string;
+        const services = (parsed.services as number[]) ?? [];
+
+        const immat = parsed.immat as string | undefined;
+        const km = parsed.km as string | number | undefined;
+        const make = parsed.make as string | undefined;
+        const model = parsed.model as string | undefined;
+        const year = parsed.year as number | undefined;
 
 
-            await postAppointment(account, id, startDate, endDate, services, carId)
-            await postCar(account, immat, km, make, model, year)
+        try {
+            await postAppointment(account, id, startDate, endDate, services, 1 );
+        } catch {
         }
 
+        try {
+            await postCar(account, immat, km, make, model, year);
+        } catch {
+
+        }
+
+
+        return {
+            start: startDate,
+            end: endDate,
+            id,
+            name: parsed.name,
+            codePostal: parsed.codePostal,
+            libelleCommune: parsed.libelleCommune,
+            immat,
+            make,
+            model,
+            year,
+            services,
+        };
     }
 
     return (
