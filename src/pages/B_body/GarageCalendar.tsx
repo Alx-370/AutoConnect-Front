@@ -318,6 +318,7 @@ const GarageCalendar = () => {
                         </Box>
                     )}
                 </DialogContent>
+
                 <DialogActions>
                     <Button onClick={() => setSelectedEvent(null)}>Annuler</Button>
                     <Button variant="contained" onClick={handleUpdateTech}>
