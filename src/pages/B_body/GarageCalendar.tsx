@@ -25,18 +25,20 @@ import Footer from "../C_footer/Footer";
 import HeaderWithLogout from "../A_header/HeaderWithLogout";
 import NavbarEngineer from "../../components/common/NavbarEngineer";
 import HeroTitle from "../../components/common/HeroTitle";
+import {putAxiosGarageCalendarSetTech} from "../../api/axiosGarageCalendar.ts";
 
 type ServiceDTO = { id?: number; name?: string };
 type Technician = { id: number; name: string; surname: string };
 
 type AppointmentResponse = {
+    id: number;
     customerId: number;
     customerName: string;
     customerSurname: string;
     customerPhone: string;
     startDate: string;
     endDate: string;
-    techicianId?: number;          // un technicien assigné
+    techicianId?: number; // backend field
     technicianName?: string;
     serviceDTOS?: ServiceDTO[];
 };
@@ -47,8 +49,8 @@ type SelectedEvent = {
     customerSurname: string;
     start: string;
     end: string;
-    techIds?: number[];
-    techNames?: string[];
+    techIds: number[];
+    techNames: string[];
     serviceDTOS: ServiceDTO[];
 };
 
@@ -66,12 +68,11 @@ const GarageCalendar = () => {
     const [selectedEvent, setSelectedEvent] = useState<SelectedEvent | null>(null);
     const [selectedTechsEvent, setSelectedTechsEvent] = useState<number[]>([]);
 
-    // Séparer les rendez-vous assignés et non assignés
     useEffect(() => {
         const assigned = appointments
             .filter(a => a.techicianId != null)
             .map<EventInput>(a => ({
-                id: String(a.customerId),
+                id: String(a.id),
                 title: `${a.customerName} ${a.customerSurname} - Tech: ${a.technicianName ?? ""}`,
                 start: a.startDate,
                 end: a.endDate,
@@ -94,15 +95,26 @@ const GarageCalendar = () => {
         setSelectedTechsUnassigned(prev => ({...prev, [appointmentKey]: techIds}));
     };
 
-    const handleValidate = (appointmentId: number) => {
+    const handleValidate = async (appointmentId: number) => {
         const techIds = selectedTechsUnassigned[String(appointmentId)];
         if (!techIds || techIds.length === 0) {
             alert("Veuillez sélectionner au moins un technicien avant de valider.");
             return;
         }
 
-        const appointment = unassignedAppointments.find(a => a.customerId === appointmentId);
+        const appointment = unassignedAppointments.find(a => a.id === appointmentId);
         if (!appointment) return;
+
+        const token = localStorage.getItem("ac.account");
+        if (!token) {
+            alert("Vous n'êtes pas connecté !");
+            return;
+        }
+
+        for (const techId of techIds) {
+            console.log(`Assigning ${techId} to ${appointmentId}`);
+            await putAxiosGarageCalendarSetTech(token, appointmentId, techId);
+        }
 
         const techNames = techIds.map(id => {
             const t = technicians.find(t => t.id === id);
@@ -110,12 +122,12 @@ const GarageCalendar = () => {
         });
 
         const newEvent: EventInput = {
-            id: String(appointment.customerId),
+            id: String(appointment.id),
             title: `${appointment.customerName} ${appointment.customerSurname} - Tech: ${techNames.join(", ")}`,
             start: appointment.startDate,
             end: appointment.endDate,
             extendedProps: {
-                techIds,
+                techIds: techIds.filter(Boolean), // jamais undefined
                 techNames,
                 serviceDTOS: appointment.serviceDTOS ?? [],
                 customerName: appointment.customerName,
@@ -124,18 +136,14 @@ const GarageCalendar = () => {
         };
 
         setCalendarAppointments(prev => [...prev, newEvent]);
-        setUnassignedAppointments(prev => prev.filter(a => a.customerId !== appointmentId));
+        setUnassignedAppointments(prev => prev.filter(a => a.id !== appointmentId));
     };
 
     const handleEventClick = (clickInfo: EventClickArg) => {
         const ev = clickInfo.event;
-        const ext = ev.extendedProps as {
-            techIds?: number[];
-            techNames?: string[];
-            serviceDTOS?: ServiceDTO[];
-            customerName: string;
-            customerSurname: string;
-        };
+        const ext = ev.extendedProps as any;
+
+        const techIds = Array.isArray(ext.techIds) ? ext.techIds.filter(Boolean) : [];
 
         setSelectedEvent({
             id: ev.id,
@@ -143,12 +151,12 @@ const GarageCalendar = () => {
             customerSurname: ext.customerSurname,
             start: ev.startStr,
             end: ev.endStr!,
-            techIds: ext.techIds,
-            techNames: ext.techNames,
+            techIds,
+            techNames: ext.techNames ?? [],
             serviceDTOS: ext.serviceDTOS ?? [],
         });
 
-        setSelectedTechsEvent(ext.techIds ?? []);
+        setSelectedTechsEvent(techIds);
     };
 
     const handleUpdateTechEvent = () => {
@@ -157,7 +165,6 @@ const GarageCalendar = () => {
             alert("Veuillez sélectionner au moins un technicien.");
             return;
         }
-
         const techNames = selectedTechsEvent.map(id => {
             const t = technicians.find(t => t.id === id);
             return t ? `${t.name} ${t.surname}` : "";
@@ -166,19 +173,18 @@ const GarageCalendar = () => {
         setCalendarAppointments(prev =>
             prev.map(ev => {
                 if (String(ev.id) !== selectedEvent.id) return ev;
-                const prevExt = ev.extendedProps as { [k: string]: any };
+                const prevExt = ev.extendedProps as any;
                 return {
                     ...ev,
                     title: `${selectedEvent.customerName} ${selectedEvent.customerSurname} - Tech: ${techNames.join(", ")}`,
                     extendedProps: {
                         ...prevExt,
-                        techIds: selectedTechsEvent,
+                        techIds: selectedTechsEvent.filter(Boolean),
                         techNames,
                     },
                 };
             })
         );
-
         setSelectedEvent(null);
         setSelectedTechsEvent([]);
     };
@@ -219,7 +225,7 @@ const GarageCalendar = () => {
                         </Typography>
                         <Stack spacing={2}>
                             {unassignedAppointments.map(a => (
-                                <Box key={`${a.customerId}-${a.startDate}`} p={2} border="1px solid #eee"
+                                <Box key={`${a.id}-${a.startDate}`} p={2} border="1px solid #eee"
                                      borderRadius={2} bgcolor="#fafafa">
                                     <Typography fontWeight="bold">
                                         {a.customerName} {a.customerSurname}
@@ -233,11 +239,11 @@ const GarageCalendar = () => {
                                             multiple
                                             size="small"
                                             displayEmpty
-                                            value={selectedTechsUnassigned[String(a.customerId)] ?? []}
+                                            value={selectedTechsUnassigned[String(a.id)] ?? []}
                                             onChange={e => {
                                                 const val = e.target.value;
                                                 handleAssignTechUnassigned(
-                                                    String(a.customerId),
+                                                    String(a.id),
                                                     typeof val === "string" ? [Number(val)] : val as number[]
                                                 );
                                             }}
@@ -250,7 +256,7 @@ const GarageCalendar = () => {
                                                 </MenuItem>
                                             ))}
                                         </Select>
-                                        <Button variant="contained" onClick={() => handleValidate(a.customerId)}>
+                                        <Button variant="contained" onClick={() => handleValidate(a.id)}>
                                             Valider
                                         </Button>
                                     </Stack>
@@ -289,7 +295,7 @@ const GarageCalendar = () => {
                             <Typography variant="body2" gutterBottom>Fin
                                 : {new Date(selectedEvent.end).toLocaleString("fr-FR")}</Typography>
                             <Typography variant="body2" color="text.secondary">
-                                Technicien(s) actuel(s) : {selectedEvent.techNames?.join(", ") || "Non assigné"}
+                                Technicien(s) actuel(s) : {selectedEvent.techNames.join(", ") || "Non assigné"}
                             </Typography>
 
                             <Select
