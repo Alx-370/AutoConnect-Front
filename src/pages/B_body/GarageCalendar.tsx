@@ -186,7 +186,6 @@ const GarageCalendar = () => {
                 };
             })
         );
-
         setSelectedEvent(null);
         setSelectedTechsEvent([]);
     };
