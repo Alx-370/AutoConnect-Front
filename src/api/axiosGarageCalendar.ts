@@ -31,7 +31,7 @@ export async function getAxiosGarageCalendarTech(tokenLocal: string): Promise<Ap
 }
 
 export async function putAxiosGarageCalendarSetTech(tokenLocal: string , idAppointment :number , idTech : number): Promise<BaseRegister[]> {
-    const {data} = await axios.put<BaseRegister[]>(`${API_BASE}/engineers/{id-appointment}/{id-tech}`, {
+    const {data} = await axios.put<BaseRegister[]>(`${API_BASE}/engineers`,null, {
         params: {
             idAppointment : idAppointment,
             idTech : idTech,

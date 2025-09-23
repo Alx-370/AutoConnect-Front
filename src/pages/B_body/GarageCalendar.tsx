@@ -1,56 +1,68 @@
-import {useState, useEffect, useCallback} from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
 import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
-import type {EventClickArg, EventInput, EventContentArg} from "@fullcalendar/core";
-import {useLoaderData} from "react-router";
-
+import type { EventClickArg, EventInput, EventContentArg } from "@fullcalendar/core";
+import { useLoaderData } from "react-router";
 import {
     Box,
     Typography,
     Chip,
     Stack,
-    Select,
-    MenuItem,
     Button,
     Dialog,
     DialogTitle,
     DialogContent,
     DialogActions,
+    Select,
+    MenuItem,
     OutlinedInput,
+    Alert,
 } from "@mui/material";
 
 import Footer from "../C_footer/Footer";
 import HeaderWithLogout from "../A_header/HeaderWithLogout";
 import NavbarEngineer from "../../components/common/NavbarEngineer";
 import HeroTitle from "../../components/common/HeroTitle";
-import {putAxiosGarageCalendarSetTech} from "../../api/axiosGarageCalendar.ts";
+import { putAxiosGarageCalendarSetTech } from "../../api/axiosGarageCalendar";
 
 type ServiceDTO = { id?: number; name?: string };
-type Technician = { id: number; name: string; surname: string };
+
+// Le backend peut ne pas fournir exactement "id"
+type Technician = {
+    [k: string]: any; // on est tolérant et on normalise ensuite
+    id?: number | string;
+    technicianId?: number | string;
+    techicianId?: number | string;
+    techId?: number | string;
+    engineerId?: number | string;
+    userId?: number | string;
+    employeeId?: number | string;
+    name?: string;
+    surname?: string;
+    firstName?: string;
+    lastName?: string;
+    fullName?: string;
+    username?: string;
+    email?: string;
+};
 
 type AppointmentResponse = {
-    id: number;
+    id: number;                 // identifiant unique du RDV
     customerId: number;
     customerName: string;
     customerSurname: string;
     customerPhone: string;
-
-    startDate: string; // ISO
-    endDate: string;   // ISO
-    techicianId?: number; // (on garde le nom venant de l’API)
-
-    startDate: string;
-    endDate: string;
-    techicianId?: number; // backend field
-
+    startDate: string;          // ISO
+    endDate: string;            // ISO
+    techicianId?: number;       // (champ backend, typo conservée)
     technicianName?: string;
     serviceDTOS?: ServiceDTO[];
 };
 
 type SelectedEvent = {
-    id: string;
+    id: string;                 // id du RDV stringifié
     customerName: string;
     customerSurname: string;
     start: string;
@@ -65,16 +77,94 @@ type LoaderData = {
     technicians: Technician[];
 };
 
-const keyOfAppt = (a: { customerId: number; startDate: string }) =>
-    `${a.customerId}-${a.startDate}`;
+const DEBUG = true;
 
-const toNumberArray = (val: unknown): number[] => {
-    const arr = Array.isArray(val) ? val : [val];
-    return arr.map(v => (typeof v === "string" ? Number(v) : (v as number))).filter(v => !Number.isNaN(v)) as number[];
+const getToken = (): string | null => {
+    const raw = localStorage.getItem("ac.account");
+    if (!raw) return null;
+    try {
+        const parsed = JSON.parse(raw);
+        return parsed?.token || parsed?.accessToken || parsed; // si déjà string JWT
+    } catch {
+        return raw; // déjà string
+    }
+};
+
+// -------- Normalisation robuste des techniciens --------
+const numeric = (v: unknown): number | null => {
+    const n = Number(v);
+    return Number.isFinite(n) ? n : null;
+};
+
+// essaie une série de clés courantes, puis scanne toutes les clés contenant "id"
+const techIdOf = (t: Technician): number | null => {
+    const candidates: unknown[] = [
+        t.id, t.technicianId, t.techicianId, t.techId, t.engineerId, t.userId, t.employeeId,
+        t.user?.id, t.account?.id, t.profile?.id,
+    ];
+    for (const c of candidates) {
+        const n = numeric(c);
+        if (n != null) return n;
+    }
+    // fallback: prendre la première clé "xxxId" numérique
+    for (const [k, v] of Object.entries(t)) {
+        if (/id$/i.test(k) || /^id$/i.test(k)) {
+            const n = numeric(v);
+            if (n != null) return n;
+        }
+    }
+    return null;
+};
+
+// label : diverses combinaisons, puis email/username, puis "Technicien #id"
+const techLabelOf = (t: Technician, id: number | null): string => {
+    const combos = [
+        `${t.name ?? ""} ${t.surname ?? ""}`.trim(),
+        `${t.firstName ?? ""} ${t.lastName ?? ""}`.trim(),
+        String(t.fullName ?? "").trim(),
+        String(t.username ?? "").trim(),
+        String(t.email ?? "").trim(),
+    ].filter(Boolean);
+    if (combos.length) return combos[0];
+    return id != null ? `Technicien #${id}` : "Technicien";
 };
 
 const GarageCalendar = () => {
     const { appointments, technicians } = useLoaderData() as LoaderData;
+
+    // 🔧 options techniciens stables et fiables
+    const techOptions = useMemo(() => {
+        const opts = (technicians ?? [])
+            .map((t) => {
+                const id = techIdOf(t);
+                if (id == null) return null;
+                return { id, label: techLabelOf(t, id), _raw: t };
+            })
+            .filter(Boolean) as { id: number; label: string; _raw: Technician }[];
+
+        if (DEBUG) {
+            // aide au débogage si la liste est vide
+            // (tu peux regarder la console pour voir la forme exacte)
+            // eslint-disable-next-line no-console
+            console.log("technicians (sample 3):", (technicians ?? []).slice(0, 3));
+            console.log("techOptions:", opts);
+            if (opts.length === 0) {
+                console.warn(
+                    "Aucun technicien normalisé: tes objets 'technicians' n'ont pas de clé id exploitable. " +
+                    "Clés vues sur le 1er élément:",
+                    technicians?.[0] ? Object.keys(technicians[0]) : []
+                );
+            }
+        }
+
+        return opts;
+    }, [technicians]);
+
+    const techById = useMemo(() => {
+        const m = new Map<number, string>();
+        techOptions.forEach((o) => m.set(o.id, o.label));
+        return m;
+    }, [techOptions]);
 
     const [calendarAppointments, setCalendarAppointments] = useState<EventInput[]>([]);
     const [unassignedAppointments, setUnassignedAppointments] = useState<AppointmentResponse[]>([]);
@@ -82,21 +172,22 @@ const GarageCalendar = () => {
     const [selectedEvent, setSelectedEvent] = useState<SelectedEvent | null>(null);
     const [selectedTechsEvent, setSelectedTechsEvent] = useState<number[]>([]);
 
-
-    // Mapper assignés / non assignés
+    // ---- Mapping assignés / non assignés -> events
     useEffect(() => {
         const assigned = appointments
-            .filter(a => a.techicianId != null)
-            .map<EventInput>(a => {
+            .filter((a) => a.techicianId != null)
+            .map<EventInput>((a) => {
                 const techIds = a.techicianId != null ? [a.techicianId] : [];
-                const techNames = a.technicianName ? [a.technicianName] : [];
+                const techNames =
+                    a.technicianName != null ? [a.technicianName] : techIds.map((id) => techById.get(id) ?? `#${id}`);
+
                 return {
-                    id: keyOfAppt(a),
-                    // on laisse un titre court : le rendu riche se fera dans eventContent
+                    id: String(a.id),
                     title: `${a.customerName} ${a.customerSurname}`,
                     start: a.startDate,
                     end: a.endDate,
                     extendedProps: {
+                        appointmentId: a.id,
                         techIds,
                         techNames,
                         serviceDTOS: a.serviceDTOS ?? [],
@@ -106,88 +197,55 @@ const GarageCalendar = () => {
                 };
             });
 
-        const unassigned = appointments.filter(a => a.techicianId == null);
-
-    useEffect(() => {
-        const assigned = appointments
-            .filter(a => a.techicianId != null)
-            .map<EventInput>(a => ({
-                id: String(a.id),
-                title: `${a.customerName} ${a.customerSurname} - Tech: ${a.technicianName ?? ""}`,
-                start: a.startDate,
-                end: a.endDate,
-                extendedProps: {
-                    techIds: a.techicianId ? [a.techicianId] : [],
-                    techNames: a.technicianName ? [a.technicianName] : [],
-                    serviceDTOS: a.serviceDTOS ?? [],
-                    customerName: a.customerName,
-                    customerSurname: a.customerSurname,
-                },
-            }));
-
-        const unassigned = appointments.filter(a => !a.techicianId);
-
+        const unassigned = appointments.filter((a) => a.techicianId == null);
 
         setCalendarAppointments(assigned);
         setUnassignedAppointments(unassigned);
-    }, [appointments]);
+    }, [appointments, techById]);
 
-    const handleAssignTechUnassigned = (appointmentKey: string, techIds: number[]) => {
-        setSelectedTechsUnassigned(prev => ({ ...prev, [appointmentKey]: techIds }));
+    // ---- Assignation depuis la liste "sans technicien"
+    const handleAssignTechUnassigned = (appointmentIdStr: string, techIds: number[]) => {
+        setSelectedTechsUnassigned((prev) => ({ ...prev, [appointmentIdStr]: techIds }));
     };
 
-
-    const handleValidate = (appointmentKey: string) => {
-        const techIds = selectedTechsUnassigned[appointmentKey];
-
     const handleValidate = async (appointmentId: number) => {
-        const techIds = selectedTechsUnassigned[String(appointmentId)];
+        const raw = selectedTechsUnassigned[String(appointmentId)] ?? [];
+        const techIds = raw.filter((v): v is number => Number.isFinite(v));
 
-        if (!techIds || techIds.length === 0) {
-            alert("Veuillez sélectionner au moins un technicien avant de valider.");
+        console.log("handleValidate()", { appointmentId, raw, techIds, wholeMap: selectedTechsUnassigned });
+
+        if (!techIds.length) {
+            alert("Veuillez sélectionner au moins un technicien.");
             return;
         }
 
-
-        const appointment = unassignedAppointments.find(a => keyOfAppt(a) === appointmentKey);
+        const appointment = unassignedAppointments.find((a) => a.id === appointmentId);
         if (!appointment) return;
 
-        const techNames = techIds
-            .map(id => technicians.find(t => t.id === id))
-            .filter((t): t is Technician => !!t)
-            .map(t => `${t.name} ${t.surname}`);
-
-        const newEvent: EventInput = {
-            id: keyOfAppt(appointment),
-            title: `${appointment.customerName} ${appointment.customerSurname}`,
-
-        const appointment = unassignedAppointments.find(a => a.id === appointmentId);
-        if (!appointment) return;
-
-        const token = localStorage.getItem("ac.account");
+        const token = getToken();
         if (!token) {
             alert("Vous n'êtes pas connecté !");
             return;
         }
 
-        for (const techId of techIds) {
-            console.log(`Assigning ${techId} to ${appointmentId}`);
-            await putAxiosGarageCalendarSetTech(token, appointmentId, techId);
+        try {
+            await Promise.all(techIds.map((tid) => putAxiosGarageCalendarSetTech(token, appointmentId, tid)));
+        } catch (err: any) {
+            console.error("Assign tech failed:", err?.response?.status, err?.response?.data, { techIds });
+            alert(`Impossible d’assigner (HTTP ${err?.response?.status ?? "?"}). Vérifie le token/roles et l’URL.`);
+            return;
         }
 
-        const techNames = techIds.map(id => {
-            const t = technicians.find(t => t.id === id);
-            return t ? `${t.name} ${t.surname}` : "";
-        });
+        const techNames = techIds.map((id) => techById.get(id) ?? `#${id}`);
 
         const newEvent: EventInput = {
             id: String(appointment.id),
-            title: `${appointment.customerName} ${appointment.customerSurname} - Tech: ${techNames.join(", ")}`,
-
+            title: `${appointment.customerName} ${appointment.customerSurname}`,
             start: appointment.startDate,
             end: appointment.endDate,
             extendedProps: {
-                techIds: techIds.filter(Boolean), // jamais undefined
+                appointmentId: appointment.id,
+                techIds: techIds.slice(),
                 techNames,
                 serviceDTOS: appointment.serviceDTOS ?? [],
                 customerName: appointment.customerName,
@@ -195,13 +253,14 @@ const GarageCalendar = () => {
             },
         };
 
-        setCalendarAppointments(prev => [...prev, newEvent]);
-
-        setUnassignedAppointments(prev => prev.filter(a => keyOfAppt(a) !== appointmentKey));
+        setCalendarAppointments((prev) => [...prev, newEvent]);
+        setUnassignedAppointments((prev) => prev.filter((a) => a.id !== appointmentId));
     };
 
+    // ---- Ouvrir la modale depuis un event FullCalendar
     const openDialogFromEvent = (ev: any) => {
         const ext = ev.extendedProps as {
+            appointmentId: number;
             techIds?: number[];
             techNames?: string[];
             serviceDTOS?: ServiceDTO[];
@@ -209,49 +268,31 @@ const GarageCalendar = () => {
             customerSurname: string;
         };
 
-        setUnassignedAppointments(prev => prev.filter(a => a.id !== appointmentId));
-    };
-
-    const handleEventClick = (clickInfo: EventClickArg) => {
-        const ev = clickInfo.event;
-        const ext = ev.extendedProps as any;
-
-        const techIds = Array.isArray(ext.techIds) ? ext.techIds.filter(Boolean) : [];
-
-
         setSelectedEvent({
             id: String(ev.id),
             customerName: ext.customerName,
             customerSurname: ext.customerSurname,
-
             start: ev.startStr ?? ev.start?.toISOString() ?? "",
             end: ev.endStr ?? ev.end?.toISOString() ?? "",
-            techIds: ext.techIds ?? [],
-
-            start: ev.startStr,
-            end: ev.endStr!,
-            techIds,
-
-            techNames: ext.techNames ?? [],
+            techIds: (ext.techIds ?? []).filter(Boolean),
+            techNames: (ext.techNames ?? []).filter(Boolean) as string[],
             serviceDTOS: ext.serviceDTOS ?? [],
         });
 
-        setSelectedTechsEvent(techIds);
+        setSelectedTechsEvent((ext.techIds ?? []).filter(Boolean));
     };
 
     const handleEventClick = (clickInfo: EventClickArg) => {
-        // clic n'importe où sur l'event
         openDialogFromEvent(clickInfo.event);
     };
 
-    // 🔹 Clic direct sur le NOM du technicien (Chip cliquable)
+    // ---- Clic direct sur un Chip de technicien (dans l'eventContent)
     const handleTechChipClick = useCallback(
         (e: React.MouseEvent, eventId: string) => {
-            e.stopPropagation(); // IMPORTANT : ne pas déclencher d'autres handlers FullCalendar
-            const found = calendarAppointments.find(ev => String(ev.id) === eventId);
+            e.stopPropagation();
+            const found = calendarAppointments.find((ev) => String(ev.id) === eventId);
             if (!found) return;
 
-            // Reconstituer un pseudo-Event pour réutiliser openDialogFromEvent
             const pseudoEvent = {
                 id: found.id,
                 startStr: String(found.start),
@@ -263,7 +304,7 @@ const GarageCalendar = () => {
         [calendarAppointments]
     );
 
-    // Rendu personnalisé des events : client + chips de techniciens cliquables
+    // ---- Rendu des events : client + chips cliquables des techniciens
     const renderEventContent = useCallback(
         (arg: EventContentArg) => {
             const ext = arg.event.extendedProps as {
@@ -298,48 +339,53 @@ const GarageCalendar = () => {
         [handleTechChipClick]
     );
 
-    const handleUpdateTechEvent = () => {
+    // ---- Mise à jour des techniciens depuis la modale
+    const handleUpdateTechEvent = async () => {
         if (!selectedEvent) return;
         if (!selectedTechsEvent || selectedTechsEvent.length === 0) {
             alert("Veuillez sélectionner au moins un technicien.");
             return;
         }
 
+        const token = getToken();
+        if (!token) {
+            alert("Vous n'êtes pas connecté !");
+            return;
+        }
 
-        const techNames = selectedTechsEvent
-            .map(id => technicians.find(t => t.id === id))
-            .filter((t): t is Technician => !!t)
-            .map(t => `${t.name} ${t.surname}`);
+        const appointmentId = Number(selectedEvent.id);
+        try {
+            await Promise.all(selectedTechsEvent.map((tid) => putAxiosGarageCalendarSetTech(token, appointmentId, tid)));
+        } catch (err: any) {
+            console.error("Update tech failed:", err?.response?.status, err?.response?.data, { selectedTechsEvent });
+            alert(`Impossible de mettre à jour (HTTP ${err?.response?.status ?? "?"}).`);
+            return;
+        }
 
-        const techNames = selectedTechsEvent.map(id => {
-            const t = technicians.find(t => t.id === id);
-            return t ? `${t.name} ${t.surname}` : "";
-        });
+        const techNames = selectedTechsEvent.map((id) => techById.get(id) ?? `#${id}`);
 
-
-        setCalendarAppointments(prev =>
-            prev.map(ev => {
+        setCalendarAppointments((prev) =>
+            prev.map((ev) => {
                 if (String(ev.id) !== selectedEvent.id) return ev;
-
                 const prevExt = (ev.extendedProps as Record<string, unknown>) ?? {};
-
-                const prevExt = ev.extendedProps as any;
-
                 return {
                     ...ev,
-                    // le titre reste le nom du client (les techs sont affichés via eventContent)
                     title: `${selectedEvent.customerName} ${selectedEvent.customerSurname}`,
                     extendedProps: {
                         ...prevExt,
-                        techIds: selectedTechsEvent.filter(Boolean),
+                        techIds: selectedTechsEvent.slice(),
                         techNames,
                     },
                 };
             })
         );
+
         setSelectedEvent(null);
         setSelectedTechsEvent([]);
     };
+
+    // --------- DEBUG panel si aucune option trouvée ---------
+    const noTechOptions = techOptions.length === 0;
 
     return (
         <>
@@ -351,6 +397,16 @@ const GarageCalendar = () => {
                 <Typography variant="h5" textAlign="center" mt={2}>
                     Planning du garage
                 </Typography>
+
+                {DEBUG && noTechOptions && (
+                    <Box mt={2}>
+                        <Alert severity="warning">
+                            Aucun technicien détecté. Tes objets <code>technicians</code> ne contiennent pas de clé d’identifiant
+                            reconnue (par ex. <code>id</code>, <code>techId</code>, <code>engineerId</code>...). Regarde la console
+                            pour voir les 3 premiers éléments et leurs clés. Adapte <code>techIdOf()</code> si besoin.
+                        </Alert>
+                    </Box>
+                )}
 
                 <FullCalendar
                     plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}
@@ -377,11 +433,12 @@ const GarageCalendar = () => {
                             Rendez-vous sans technicien assigné
                         </Typography>
                         <Stack spacing={2}>
+                            {unassignedAppointments.map((a) => {
+                                const key = String(a.id);
+                                const selectedIds = selectedTechsUnassigned[key] ?? [];
 
-                            {unassignedAppointments.map(a => {
-                                const key = keyOfAppt(a);
                                 return (
-                                    <Box key={key} p={2} border="1px solid #eee" borderRadius={2} bgcolor="#fafafa">
+                                    <Box key={`${a.id}-${a.startDate}`} p={2} border="1px solid #eee" borderRadius={2} bgcolor="#fafafa">
                                         <Typography fontWeight="bold">
                                             {a.customerName} {a.customerSurname}
                                         </Typography>
@@ -389,78 +446,46 @@ const GarageCalendar = () => {
                                             <Chip label={`Début : ${new Date(a.startDate).toLocaleString("fr-FR")}`} />
                                             <Chip label={`Fin : ${new Date(a.endDate).toLocaleString("fr-FR")}`} />
                                         </Stack>
-                                        <Stack direction="row" spacing={2} alignItems="center" mt={1}>
-                                            <Select
-                                                multiple
-                                                size="small"
-                                                displayEmpty
-                                                value={selectedTechsUnassigned[key] ?? []}
-                                                onChange={e => {
-                                                    const techIds = toNumberArray(e.target.value);
-                                                    handleAssignTechUnassigned(key, techIds);
-                                                }}
-                                                input={<OutlinedInput />}
-                                                sx={{ minWidth: 250 }}
-                                            >
-                                                {technicians.map(tech => (
-                                                    <MenuItem key={tech.id} value={tech.id}>
-                                                        {tech.name} {tech.surname}
-                                                    </MenuItem>
-                                                ))}
-                                            </Select>
-                                            <Button variant="contained" onClick={() => handleValidate(key)}>
-                                                Valider
-                                            </Button>
-                                        </Stack>
-                                        <Typography variant="body2" color="text.secondary" mt={1}>
-                                            Services : {a.serviceDTOS?.map(s => s.name).join(", ") || "Aucun service"}
-                                        </Typography>
-                                    </Box>
-                                );
-                            })}
 
-                            {unassignedAppointments.map(a => (
-                                <Box key={`${a.id}-${a.startDate}`} p={2} border="1px solid #eee"
-                                     borderRadius={2} bgcolor="#fafafa">
-                                    <Typography fontWeight="bold">
-                                        {a.customerName} {a.customerSurname}
-                                    </Typography>
-                                    <Stack direction="row" spacing={1} my={1}>
-                                        <Chip label={`Début : ${new Date(a.startDate).toLocaleString("fr-FR")}`}/>
-                                        <Chip label={`Fin : ${new Date(a.endDate).toLocaleString("fr-FR")}`}/>
-                                    </Stack>
-                                    <Stack direction="row" spacing={2} alignItems="center" mt={1}>
+                                        {/* ✅ Select multiple basé sur techOptions normalisées */}
                                         <Select
                                             multiple
                                             size="small"
                                             displayEmpty
-                                            value={selectedTechsUnassigned[String(a.id)] ?? []}
-                                            onChange={e => {
-                                                const val = e.target.value;
-                                                handleAssignTechUnassigned(
-                                                    String(a.id),
-                                                    typeof val === "string" ? [Number(val)] : val as number[]
-                                                );
+                                            value={selectedIds}
+                                            onChange={(e) => {
+                                                const val = e.target.value as Array<string | number>;
+                                                const ids = val
+                                                    .map((v) => (typeof v === "string" ? Number(v) : v))
+                                                    .filter((n) => Number.isFinite(n)) as number[];
+                                                console.log("Select change -> raw:", e.target.value, "ids:", ids, "for appt", key);
+                                                handleAssignTechUnassigned(key, ids);
                                             }}
-                                            input={<OutlinedInput/>}
-                                            sx={{minWidth: 250}}
+                                            input={<OutlinedInput />}
+                                            sx={{ minWidth: 320 }}
                                         >
-                                            {technicians.map(tech => (
-                                                <MenuItem key={tech.id} value={tech.id}>
-                                                    {tech.name} {tech.surname}
+                                            {techOptions.map((opt) => (
+                                                <MenuItem key={opt.id} value={opt.id}>
+                                                    {opt.label}
                                                 </MenuItem>
                                             ))}
+                                            {techOptions.length === 0 && (
+                                                <MenuItem disabled value="">
+                                                    (Aucun technicien disponible)
+                                                </MenuItem>
+                                            )}
                                         </Select>
-                                        <Button variant="contained" onClick={() => handleValidate(a.id)}>
+
+                                        <Button sx={{ mt: 1 }} variant="contained" onClick={() => handleValidate(a.id)} disabled={techOptions.length === 0}>
                                             Valider
                                         </Button>
-                                    </Stack>
-                                    <Typography variant="body2" color="text.secondary" mt={1}>
-                                        Services : {a.serviceDTOS?.map(s => s.name).join(", ") || "Aucun service"}
-                                    </Typography>
-                                </Box>
-                            ))}
 
+                                        <Typography variant="body2" color="text.secondary" mt={1}>
+                                            Services : {a.serviceDTOS?.map((s) => s.name).join(", ") || "Aucun service"}
+                                        </Typography>
+                                    </Box>
+                                );
+                            })}
                         </Stack>
                     </Box>
                 )}
@@ -501,22 +526,34 @@ const GarageCalendar = () => {
                                 size="small"
                                 displayEmpty
                                 value={selectedTechsEvent}
-                                onChange={e => setSelectedTechsEvent(toNumberArray(e.target.value))}
+                                onChange={(e) => {
+                                    const val = e.target.value as Array<string | number>;
+                                    const ids = val
+                                        .map((v) => (typeof v === "string" ? Number(v) : v))
+                                        .filter((n) => Number.isFinite(n)) as number[];
+                                    console.log("Modal Select change ->", ids);
+                                    setSelectedTechsEvent(ids);
+                                }}
                                 input={<OutlinedInput />}
-                                sx={{ mt: 1, minWidth: 250 }}
+                                sx={{ mt: 1, minWidth: 320 }}
                             >
-                                {technicians.map(tech => (
-                                    <MenuItem key={tech.id} value={tech.id}>
-                                        {tech.name} {tech.surname}
+                                {techOptions.map((opt) => (
+                                    <MenuItem key={opt.id} value={opt.id}>
+                                        {opt.label}
                                     </MenuItem>
                                 ))}
+                                {techOptions.length === 0 && (
+                                    <MenuItem disabled value="">
+                                        (Aucun technicien disponible)
+                                    </MenuItem>
+                                )}
                             </Select>
                         </Box>
                     )}
                 </DialogContent>
                 <DialogActions>
                     <Button onClick={() => setSelectedEvent(null)}>Annuler</Button>
-                    <Button variant="contained" onClick={handleUpdateTechEvent}>
+                    <Button variant="contained" onClick={handleUpdateTechEvent} disabled={techOptions.length === 0}>
                         Mettre à jour
                     </Button>
                 </DialogActions>
