@@ -165,7 +165,6 @@ const GarageCalendar = () => {
             alert("Veuillez sélectionner au moins un technicien.");
             return;
         }
-
         const techNames = selectedTechsEvent.map(id => {
             const t = technicians.find(t => t.id === id);
             return t ? `${t.name} ${t.surname}` : "";
