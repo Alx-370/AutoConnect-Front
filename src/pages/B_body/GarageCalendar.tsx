@@ -5,21 +5,7 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import type { EventClickArg, EventInput, EventContentArg } from "@fullcalendar/core";
 import { useLoaderData } from "react-router";
-import {
-    Box,
-    Typography,
-    Chip,
-    Stack,
-    Button,
-    Dialog,
-    DialogTitle,
-    DialogContent,
-    DialogActions,
-    Select,
-    MenuItem,
-    OutlinedInput,
-    Alert,
-} from "@mui/material";
+import {Box, Typography, Chip, Stack, Button, Dialog, DialogTitle, DialogContent, DialogActions, Select, MenuItem, OutlinedInput, Alert,} from "@mui/material";
 
 import Footer from "../C_footer/Footer";
 import HeaderWithLogout from "../A_header/HeaderWithLogout";
@@ -29,9 +15,9 @@ import { putAxiosGarageCalendarSetTech } from "../../api/axiosGarageCalendar";
 
 type ServiceDTO = { id?: number; name?: string };
 
-// Le backend peut ne pas fournir exactement "id"
+
 type Technician = {
-    [k: string]: any; // on est tolérant et on normalise ensuite
+    [k: string]: any;
     id?: number | string;
     technicianId?: number | string;
     techicianId?: number | string;
@@ -49,20 +35,20 @@ type Technician = {
 };
 
 type AppointmentResponse = {
-    id: number;                 // identifiant unique du RDV
+    id: number;
     customerId: number;
     customerName: string;
     customerSurname: string;
     customerPhone: string;
-    startDate: string;          // ISO
-    endDate: string;            // ISO
-    techicianId?: number;       // (champ backend, typo conservée)
+    startDate: string;
+    endDate: string;
+    techicianId?: number;
     technicianName?: string;
     serviceDTOS?: ServiceDTO[];
 };
 
 type SelectedEvent = {
-    id: string;                 // id du RDV stringifié
+    id: string;
     customerName: string;
     customerSurname: string;
     start: string;
@@ -84,19 +70,19 @@ const getToken = (): string | null => {
     if (!raw) return null;
     try {
         const parsed = JSON.parse(raw);
-        return parsed?.token || parsed?.accessToken || parsed; // si déjà string JWT
+        return parsed?.token || parsed?.accessToken || parsed;
     } catch {
-        return raw; // déjà string
+        return raw;
     }
 };
 
-// -------- Normalisation robuste des techniciens --------
+
 const numeric = (v: unknown): number | null => {
     const n = Number(v);
     return Number.isFinite(n) ? n : null;
 };
 
-// essaie une série de clés courantes, puis scanne toutes les clés contenant "id"
+
 const techIdOf = (t: Technician): number | null => {
     const candidates: unknown[] = [
         t.id, t.technicianId, t.techicianId, t.techId, t.engineerId, t.userId, t.employeeId,
@@ -106,7 +92,7 @@ const techIdOf = (t: Technician): number | null => {
         const n = numeric(c);
         if (n != null) return n;
     }
-    // fallback: prendre la première clé "xxxId" numérique
+
     for (const [k, v] of Object.entries(t)) {
         if (/id$/i.test(k) || /^id$/i.test(k)) {
             const n = numeric(v);
@@ -116,7 +102,7 @@ const techIdOf = (t: Technician): number | null => {
     return null;
 };
 
-// label : diverses combinaisons, puis email/username, puis "Technicien #id"
+
 const techLabelOf = (t: Technician, id: number | null): string => {
     const combos = [
         `${t.name ?? ""} ${t.surname ?? ""}`.trim(),
@@ -132,7 +118,7 @@ const techLabelOf = (t: Technician, id: number | null): string => {
 const GarageCalendar = () => {
     const { appointments, technicians } = useLoaderData() as LoaderData;
 
-    // 🔧 options techniciens stables et fiables
+
     const techOptions = useMemo(() => {
         const opts = (technicians ?? [])
             .map((t) => {
@@ -143,9 +129,7 @@ const GarageCalendar = () => {
             .filter(Boolean) as { id: number; label: string; _raw: Technician }[];
 
         if (DEBUG) {
-            // aide au débogage si la liste est vide
-            // (tu peux regarder la console pour voir la forme exacte)
-            // eslint-disable-next-line no-console
+
             console.log("technicians (sample 3):", (technicians ?? []).slice(0, 3));
             console.log("techOptions:", opts);
             if (opts.length === 0) {
@@ -172,7 +156,6 @@ const GarageCalendar = () => {
     const [selectedEvent, setSelectedEvent] = useState<SelectedEvent | null>(null);
     const [selectedTechsEvent, setSelectedTechsEvent] = useState<number[]>([]);
 
-    // ---- Mapping assignés / non assignés -> events
     useEffect(() => {
         const assigned = appointments
             .filter((a) => a.techicianId != null)
@@ -203,7 +186,7 @@ const GarageCalendar = () => {
         setUnassignedAppointments(unassigned);
     }, [appointments, techById]);
 
-    // ---- Assignation depuis la liste "sans technicien"
+
     const handleAssignTechUnassigned = (appointmentIdStr: string, techIds: number[]) => {
         setSelectedTechsUnassigned((prev) => ({ ...prev, [appointmentIdStr]: techIds }));
     };
@@ -257,7 +240,7 @@ const GarageCalendar = () => {
         setUnassignedAppointments((prev) => prev.filter((a) => a.id !== appointmentId));
     };
 
-    // ---- Ouvrir la modale depuis un event FullCalendar
+
     const openDialogFromEvent = (ev: any) => {
         const ext = ev.extendedProps as {
             appointmentId: number;
@@ -286,7 +269,7 @@ const GarageCalendar = () => {
         openDialogFromEvent(clickInfo.event);
     };
 
-    // ---- Clic direct sur un Chip de technicien (dans l'eventContent)
+
     const handleTechChipClick = useCallback(
         (e: React.MouseEvent, eventId: string) => {
             e.stopPropagation();
@@ -304,7 +287,7 @@ const GarageCalendar = () => {
         [calendarAppointments]
     );
 
-    // ---- Rendu des events : client + chips cliquables des techniciens
+
     const renderEventContent = useCallback(
         (arg: EventContentArg) => {
             const ext = arg.event.extendedProps as {
@@ -339,7 +322,7 @@ const GarageCalendar = () => {
         [handleTechChipClick]
     );
 
-    // ---- Mise à jour des techniciens depuis la modale
+
     const handleUpdateTechEvent = async () => {
         if (!selectedEvent) return;
         if (!selectedTechsEvent || selectedTechsEvent.length === 0) {
@@ -384,7 +367,7 @@ const GarageCalendar = () => {
         setSelectedTechsEvent([]);
     };
 
-    // --------- DEBUG panel si aucune option trouvée ---------
+
     const noTechOptions = techOptions.length === 0;
 
     return (
@@ -447,7 +430,7 @@ const GarageCalendar = () => {
                                             <Chip label={`Fin : ${new Date(a.endDate).toLocaleString("fr-FR")}`} />
                                         </Stack>
 
-                                        {/* ✅ Select multiple basé sur techOptions normalisées */}
+
                                         <Select
                                             multiple
                                             size="small"
